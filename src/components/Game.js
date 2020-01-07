@@ -11,6 +11,11 @@ class Game extends Component {
     constructor(props) {
         super(props);
         this.canvas = React.createRef();
+        this.mouse = {
+            x: undefined,
+            y: undefined
+        };
+
     }
 
     draw = (ctx, x, y, colour) => {
@@ -29,6 +34,11 @@ class Game extends Component {
 
         this.draw(ctx, 50, 100, "red");
         this.draw(ctx, 50, 160, "black");
+
+        document.addEventListener("mousemove", (event) => {
+            this.mouse.x = event.clientX;
+            this.mouse.y = event.clientY;
+        });
     }
 
     componentDidUpdate() {
