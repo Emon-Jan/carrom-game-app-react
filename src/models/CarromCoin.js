@@ -2,7 +2,7 @@ import GameObject from "./GameObject";
 
 class CarromCoin extends GameObject {
     constructor(context, x, y, radius, color, vx, vy) {
-        super(context, x, y, radius, color, vx, vy);
+        super(context, x, y, vx, vy);
 
         this.color = color;
         this.radius = radius;

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import "./Game.css"
 import CarromCoin from "../models/CarromCoin";
+import "./Game.css"
 
 let ctx;
 let canvasRef;
@@ -17,6 +17,7 @@ let pos = [
     { cX: 0, cY: 30, col: "WHEAT" },
     { cX: 54, cY: 0, col: "Black" },
 ]
+let oldTimestamp = 0;
 class Game extends Component {
 
     constructor(props) {
@@ -26,6 +27,7 @@ class Game extends Component {
             x: undefined,
             y: undefined
         };
+        this.timestamp = undefined;
     }
 
     componentDidMount() {
@@ -41,8 +43,25 @@ class Game extends Component {
             this.mouse.y = event.y - rect.top - 400;
         });
 
+        document.addEventListener("keydown", (event) => {
+            console.log(event.keyCode, event.timeStamp);
+        });
+
+        document.addEventListener("keyup", (event) => {
+            console.log(event.keyCode, event.timeStamp);
+        });
+
+        // this.displayWork();
+
+        this.createCarromCoin();
+        gameObjects[18] = new CarromCoin(ctx, 0, 0, this.props.bird.radius, "DARKRED");
+        gameObjects[18].draw();
+
+        gameObjects[19] = new CarromCoin(ctx, 0, 300, this.props.bird.radius, "REBECCAPURPLE");
+        gameObjects[19].draw();
+        console.log(gameObjects);
         this.displayWork();
-        this.mouseEvent();
+        // this.mouseEvent();
     }
 
     createCarromCoin = () => {
@@ -57,14 +76,29 @@ class Game extends Component {
             }
             i++;
         }
+
     }
 
 
-    displayWork = () => {
+    displayWork = (timeStamp) => {
+        let secPassed = (timeStamp - oldTimestamp) / 1000;
+        oldTimestamp = timeStamp;
+        // console.log(secPassed);
         ctx.clearRect(-400, -400, canvasRef.width, canvasRef.height);
+
         this.createCarromCoin();
+
         gameObjects[18] = new CarromCoin(ctx, 0, 0, this.props.bird.radius, "DARKRED");
         gameObjects[18].draw();
+        // for (let index = 0; index < gameObjects.length; index++) {
+        //     gameObjects[index].draw();
+        // }
+
+        gameObjects[19].vx = gameObjects[19].x;
+        gameObjects[19].vy = 1;
+        gameObjects[19].update(-0.5);
+        gameObjects[19].draw();
+
         requestId = requestAnimationFrame(this.displayWork);
     }
 
