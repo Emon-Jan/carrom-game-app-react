@@ -10,11 +10,11 @@ let x = 200;
 let y = 30;
 let gameObjects = [];
 let pos = [
-    { cX: 0, cY: 0, col: "LAVENDER" },
+    { cX: 0, cY: 0, col: "WHEAT" },
     { cX: 27, cY: -15, col: "Black" },
-    { cX: 54, cY: -30, col: "LAVENDER" },
+    { cX: 54, cY: -30, col: "WHEAT" },
     { cX: 27, cY: 15, col: "Black" },
-    { cX: 0, cY: 30, col: "LAVENDER" },
+    { cX: 0, cY: 30, col: "WHEAT" },
     { cX: 54, cY: 0, col: "Black" },
 ]
 class Game extends Component {
@@ -63,7 +63,7 @@ class Game extends Component {
     displayWork = () => {
         ctx.clearRect(-400, -400, canvasRef.width, canvasRef.height);
         this.createCarromCoin();
-        gameObjects[18] = new CarromCoin(ctx, 0, 0, this.props.bird.radius, "DARKORANGE");
+        gameObjects[18] = new CarromCoin(ctx, 0, 0, this.props.bird.radius, "DARKRED");
         gameObjects[18].draw();
         requestId = requestAnimationFrame(this.displayWork);
     }
