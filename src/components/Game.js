@@ -10,12 +10,12 @@ let x = 200;
 let y = 30;
 let gameObjects = [];
 let pos = [
-    { cX: 0, cY: 0 },
-    { cX: 27, cY: -15 },
-    { cX: 54, cY: -30 },
-    { cX: 27, cY: 15 },
-    { cX: 0, cY: 30 },
-    { cX: 54, cY: 0 },
+    { cX: 0, cY: 0, col: "LAVENDER" },
+    { cX: 27, cY: -15, col: "Black" },
+    { cX: 54, cY: -30, col: "LAVENDER" },
+    { cX: 27, cY: 15, col: "Black" },
+    { cX: 0, cY: 30, col: "LAVENDER" },
+    { cX: 54, cY: 0, col: "Black" },
 ]
 class Game extends Component {
 
@@ -34,8 +34,6 @@ class Game extends Component {
         canvasRef.width = 800;
         canvasRef.height = 800;
         ctx.translate(400, 400);
-        // this.draw(ctx, 50, 100, this.props.bird.radius, "red");
-        // this.draw(ctx, 50, 160, this.props.bird.radius, "black");
 
         document.addEventListener("mousemove", (event) => {
             var rect = canvasRef.getBoundingClientRect();
@@ -47,54 +45,31 @@ class Game extends Component {
         this.mouseEvent();
     }
 
-    draw = (x, y, radius, color) => {
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
-        ctx.fill();
-        ctx.stroke();
-    }
-
     createCarromCoin = () => {
-        for (let i = 0; i < 3; i++) {
-            gameObjects[i] = new CarromCoin(ctx, 0, y, this.props.bird.radius, "Grey");
-            // this.draw(0, y, this.props.bird.radius, "Grey");
-            gameObjects[i].draw();
-            ctx.rotate(2 * Math.PI / 3);
+        let i = 0;
+        let count = 0;
+        while (i < 6) {
+            for (let j = 0; j < 3; j++) {
+                gameObjects[count] = new CarromCoin(ctx, pos[i].cX, (y + pos[i].cY), this.props.bird.radius, pos[i].col);
+                gameObjects[count].draw();
+                ctx.rotate(2 * Math.PI / 3);
+                count++;
+            }
+            i++;
         }
-        for (let i = 0; i < 3; i++) {
-            this.draw(27, (y - 15), this.props.bird.radius, "Black");
-            ctx.rotate(2 * Math.PI / 3);
-        }
-        for (let i = 0; i < 3; i++) {
-            this.draw(54, (y - 30), this.props.bird.radius, "Grey");
-            ctx.rotate(2 * Math.PI / 3);
-        }
-        for (let i = 0; i < 3; i++) {
-            this.draw(27, (y + 15), this.props.bird.radius, "Black");
-            ctx.rotate(2 * Math.PI / 3);
-        }
-        for (let i = 0; i < 3; i++) {
-            this.draw(0, (y + 30), this.props.bird.radius, "Grey");
-            ctx.rotate(2 * Math.PI / 3);
-        }
-        for (let i = 0; i < 3; i++) {
-            this.draw(54, y, this.props.bird.radius, "BLACK");
-            ctx.rotate(2 * Math.PI / 3);
-        }
-
     }
 
 
     displayWork = () => {
         ctx.clearRect(-400, -400, canvasRef.width, canvasRef.height);
         this.createCarromCoin();
-        this.draw(0, 0, this.props.bird.radius, "DARKORANGE");
+        gameObjects[18] = new CarromCoin(ctx, 0, 0, this.props.bird.radius, "DARKORANGE");
+        gameObjects[18].draw();
         requestId = requestAnimationFrame(this.displayWork);
     }
 
     mouseEvent = () => {
-        this.draw(this.mouse.x, this.mouse.y, 10, "green");
+        new CarromCoin(ctx, this.mouse.x, this.mouse.y, 10, "green").draw();
         requestIdForMouse = requestAnimationFrame(this.mouseEvent);
     }
 
