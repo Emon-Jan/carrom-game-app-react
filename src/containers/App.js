@@ -5,7 +5,7 @@ import './App.css';
 class App extends Component {
   state = {
     bird: {
-      radius: 10
+      radius: 20
     }
   }
 
