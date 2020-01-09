@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import "./Game.css"
+import CarromCoin from "../models/CarromCoin";
 
 let ctx;
 let canvasRef;
@@ -7,7 +8,15 @@ let requestId;
 let requestIdForMouse;
 let x = 200;
 let y = 30;
-let whiteCircle = 9;
+let gameObjects = [];
+let pos = [
+    { cX: 0, cY: 0 },
+    { cX: 27, cY: -15 },
+    { cX: 54, cY: -30 },
+    { cX: 27, cY: 15 },
+    { cX: 0, cY: 30 },
+    { cX: 54, cY: 0 },
+]
 class Game extends Component {
 
     constructor(props) {
@@ -17,14 +26,6 @@ class Game extends Component {
             x: undefined,
             y: undefined
         };
-    }
-
-    draw = (x, y, radius, color) => {
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
-        ctx.fill();
-        ctx.stroke();
     }
 
     componentDidMount() {
@@ -46,9 +47,19 @@ class Game extends Component {
         this.mouseEvent();
     }
 
-    showArc = () => {
+    draw = (x, y, radius, color) => {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+        ctx.fill();
+        ctx.stroke();
+    }
+
+    createCarromCoin = () => {
         for (let i = 0; i < 3; i++) {
-            this.draw(0, y, this.props.bird.radius, "Grey");
+            gameObjects[i] = new CarromCoin(ctx, 0, y, this.props.bird.radius, "Grey");
+            // this.draw(0, y, this.props.bird.radius, "Grey");
+            gameObjects[i].draw();
             ctx.rotate(2 * Math.PI / 3);
         }
         for (let i = 0; i < 3; i++) {
@@ -77,7 +88,7 @@ class Game extends Component {
 
     displayWork = () => {
         ctx.clearRect(-400, -400, canvasRef.width, canvasRef.height);
-        this.showArc();
+        this.createCarromCoin();
         this.draw(0, 0, this.props.bird.radius, "DARKORANGE");
         requestId = requestAnimationFrame(this.displayWork);
     }
