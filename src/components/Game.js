@@ -30,16 +30,16 @@ class Game extends Component {
     componentDidMount() {
         canvasRef = this.canvas.current;
         ctx = canvasRef.getContext("2d");
-        canvasRef.width = 600;
-        canvasRef.height = 600;
-        ctx.translate(300, 300);
+        canvasRef.width = 800;
+        canvasRef.height = 800;
+        ctx.translate(400, 400);
         // this.draw(ctx, 50, 100, this.props.bird.radius, "red");
         // this.draw(ctx, 50, 160, this.props.bird.radius, "black");
 
         document.addEventListener("mousemove", (event) => {
             var rect = canvasRef.getBoundingClientRect();
-            this.mouse.x = event.x - rect.left - 300;
-            this.mouse.y = event.y - rect.top - 300;
+            this.mouse.x = event.x - rect.left - 400;
+            this.mouse.y = event.y - rect.top - 400;
         });
 
         this.displayWork();
@@ -52,19 +52,19 @@ class Game extends Component {
             ctx.rotate(2 * Math.PI / 3);
         }
         for (let i = 0; i < 3; i++) {
-            this.draw(27, y - 15, this.props.bird.radius, "Black");
+            this.draw(27, (y - 15), this.props.bird.radius, "Black");
             ctx.rotate(2 * Math.PI / 3);
         }
         for (let i = 0; i < 3; i++) {
-            this.draw(54, y - 30, this.props.bird.radius, "Grey");
+            this.draw(54, (y - 30), this.props.bird.radius, "Grey");
             ctx.rotate(2 * Math.PI / 3);
         }
         for (let i = 0; i < 3; i++) {
-            this.draw(27, y + 15, this.props.bird.radius, "Black");
+            this.draw(27, (y + 15), this.props.bird.radius, "Black");
             ctx.rotate(2 * Math.PI / 3);
         }
         for (let i = 0; i < 3; i++) {
-            this.draw(0, y + 30, this.props.bird.radius, "Grey");
+            this.draw(0, (y + 30), this.props.bird.radius, "Grey");
             ctx.rotate(2 * Math.PI / 3);
         }
         for (let i = 0; i < 3; i++) {
@@ -76,7 +76,7 @@ class Game extends Component {
 
 
     displayWork = () => {
-        ctx.clearRect(-300, -300, canvasRef.width, canvasRef.height);
+        ctx.clearRect(-400, -400, canvasRef.width, canvasRef.height);
         this.showArc();
         this.draw(0, 0, this.props.bird.radius, "DARKORANGE");
         requestId = requestAnimationFrame(this.displayWork);
