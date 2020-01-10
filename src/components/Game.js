@@ -27,16 +27,9 @@ class Game extends Component {
             x: undefined,
             y: undefined
         };
-        this.timestamp = undefined;
     }
 
-    componentDidMount() {
-        canvasRef = this.canvas.current;
-        ctx = canvasRef.getContext("2d");
-        canvasRef.width = 800;
-        canvasRef.height = 800;
-        ctx.translate(400, 400);
-
+    eventRegister = () => {
         document.addEventListener("mousemove", (event) => {
             var rect = canvasRef.getBoundingClientRect();
             this.mouse.x = event.x - rect.left - 400;
@@ -50,18 +43,59 @@ class Game extends Component {
         document.addEventListener("keyup", (event) => {
             console.log(event.keyCode, event.timeStamp);
         });
+    }
 
-        // this.displayWork();
+    init = () => {
+        canvasRef = this.canvas.current;
+        ctx = canvasRef.getContext("2d");
+        canvasRef.width = 800;
+        canvasRef.height = 800;
+        ctx.translate(400, 400);
 
+        this.eventRegister();
         this.createCarromCoin();
-        gameObjects[18] = new CarromCoin(ctx, 0, 0, this.props.bird.radius, "DARKRED");
+
+        gameObjects[18] = new CarromCoin(ctx, 0, 0, this.props.circle.radius, "DARKRED");
         gameObjects[18].draw();
 
-        gameObjects[19] = new CarromCoin(ctx, 0, 300, this.props.bird.radius, "REBECCAPURPLE");
+        gameObjects[19] = new CarromCoin(ctx, 0, 300, this.props.circle.radius, "REBECCAPURPLE");
         gameObjects[19].draw();
         console.log(gameObjects);
-        this.displayWork();
+
+        requestAnimationFrame(timeStamp => this.carromLoop(timeStamp));
+    }
+
+
+    componentDidMount() {
+
+        this.init();
+        // this.carromLoop();
         // this.mouseEvent();
+    }
+
+    circleCollide = (x1, y1, r1, x2, y2, r2) => {
+        let squareCicleDistance = ((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2));
+        return squareCicleDistance <= ((r1 + r2) * (r1 + r2))
+    }
+
+    detectCollision = () => {
+        let obj1, obj2;
+
+        for (let index = 0; index < gameObjects.length; index++) {
+            gameObjects[index].isColliding = false;
+        }
+
+        for (let i = 0; i < gameObjects.length; i++) {
+            obj1 = gameObjects[i];
+            for (let j = 0; j < gameObjects.length; j++) {
+                obj2 = gameObjects[j];
+
+                if (this.circleCollide(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y, obj2.radius)) {
+                    obj1.isColliding = true;
+                    obj2.isColliding = true;
+                }
+            }
+        }
     }
 
     createCarromCoin = () => {
@@ -69,7 +103,7 @@ class Game extends Component {
         let count = 0;
         while (i < 6) {
             for (let j = 0; j < 3; j++) {
-                gameObjects[count] = new CarromCoin(ctx, pos[i].cX, (y + pos[i].cY), this.props.bird.radius, pos[i].col);
+                gameObjects[count] = new CarromCoin(ctx, pos[i].cX, (y + pos[i].cY), this.props.circle.radius, pos[i].col);
                 gameObjects[count].draw();
                 ctx.rotate(2 * Math.PI / 3);
                 count++;
@@ -80,43 +114,30 @@ class Game extends Component {
     }
 
 
-    displayWork = (timeStamp) => {
+    carromLoop = (timeStamp) => {
         let secPassed = (timeStamp - oldTimestamp) / 1000;
         oldTimestamp = timeStamp;
-        // console.log(secPassed);
+
+
+        for (let index = 0; index < gameObjects.length; index++) {
+            gameObjects[index].update(secPassed);
+        }
+
         ctx.clearRect(-400, -400, canvasRef.width, canvasRef.height);
 
-        this.createCarromCoin();
+        for (let index = 0; index < gameObjects.length; index++) {
+            gameObjects[index].draw();
 
-        gameObjects[18] = new CarromCoin(ctx, 0, 0, this.props.bird.radius, "DARKRED");
-        gameObjects[18].draw();
-        // for (let index = 0; index < gameObjects.length; index++) {
-        //     gameObjects[index].draw();
-        // }
+            ctx.rotate(2 * Math.PI / 3);
+        }
 
-        gameObjects[19].vx = gameObjects[19].x;
-        gameObjects[19].vy = 1;
-        gameObjects[19].update(-0.5);
-        gameObjects[19].draw();
-
-        requestId = requestAnimationFrame(this.displayWork);
+        requestId = requestAnimationFrame(timeStamp => this.carromLoop(timeStamp));
     }
 
     mouseEvent = () => {
         new CarromCoin(ctx, this.mouse.x, this.mouse.y, 10, "green").draw();
         requestIdForMouse = requestAnimationFrame(this.mouseEvent);
     }
-
-    // cancel = () => {
-    //     cancelAnimationFrame(requestId);
-    //     cancelAnimationFrame(requestIdForMouse);
-    //     ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
-    //     x = 50;
-    //     // dx = 3;
-    //     this.draw(ctx, 50, 100, "red");
-    //     this.draw(ctx, 50, 160, "black");
-    //     this.draw(ctx, 50, 220, "green");
-    // }
 
     render() {
         return (
