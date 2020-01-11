@@ -55,14 +55,14 @@ class Game extends Component {
         this.eventRegister();
         this.createCarromCoin();
 
-        gameObjects[18] = new CarromCoin(ctx, 0, 0, this.props.circle.radius, "DARKRED");
-        gameObjects[18].draw();
+        // gameObjects[18] = new CarromCoin(ctx, 0, 0, this.props.circle.radius, "DARKRED");
+        // gameObjects[18].draw();
 
-        gameObjects[19] = new CarromCoin(ctx, 0, 300, this.props.circle.radius, "REBECCAPURPLE");
-        gameObjects[19].draw();
+        // gameObjects[19] = new CarromCoin(ctx, 0, 300, this.props.circle.radius, "REBECCAPURPLE");
+        // gameObjects[19].draw();
         console.log(gameObjects);
 
-        requestAnimationFrame(timeStamp => this.carromLoop(timeStamp));
+        // requestAnimationFrame(timeStamp => this.carromLoop(timeStamp)) 
     }
 
 
@@ -99,17 +99,27 @@ class Game extends Component {
     }
 
     createCarromCoin = () => {
-        let i = 0;
-        let count = 0;
-        while (i < 6) {
-            for (let j = 0; j < 3; j++) {
-                gameObjects[count] = new CarromCoin(ctx, pos[i].cX, (y + pos[i].cY), this.props.circle.radius, pos[i].col);
-                gameObjects[count].draw();
-                ctx.rotate(2 * Math.PI / 3);
-                count++;
-            }
-            i++;
+
+        gameObjects = [
+            new CarromCoin(ctx, 0, 0, this.props.circle.radius, "DARKRED"),
+            new CarromCoin(ctx, 0, (this.props.circle.radius * 2), this.props.circle.radius, "WHEAT"),
+            new CarromCoin(ctx, 30, -(this.props.circle.radius * 2), this.props.circle.radius, "WHEAT"),
+            new CarromCoin(ctx, -30, -(this.props.circle.radius * 2l), this.props.circle.radius, "WHEAT"),
+        ];
+        for (let index = 0; index < gameObjects.length; index++) {
+            gameObjects[index].draw();
         }
+        // let i = 0;
+        // let count = 0;
+        // while (i < 6) {
+        //     for (let j = 0; j < 3; j++) {
+        //         gameObjects[count] = new CarromCoin(ctx, pos[i].cX, (y + pos[i].cY), this.props.circle.radius, pos[i].col);
+        //         gameObjects[count].draw();
+        //         ctx.rotate(2 * Math.PI / 3);
+        //         count++;
+        //     }
+        //     i++;
+        // }
 
     }
 
@@ -127,8 +137,7 @@ class Game extends Component {
 
         for (let index = 0; index < gameObjects.length; index++) {
             gameObjects[index].draw();
-
-            ctx.rotate(2 * Math.PI / 3);
+            // ctx.rotate(2 * Math.PI / 3);
         }
 
         requestId = requestAnimationFrame(timeStamp => this.carromLoop(timeStamp));
