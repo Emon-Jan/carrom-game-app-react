@@ -17,6 +17,27 @@ class Game extends Component {
             x: undefined,
             y: undefined
         };
+        this.pos = [
+            { pX: 0, pY: 0, pCol: "DARKRED" },
+            { pX: 0, pY: (this.props.circle.radius * 2), pCol: "WHEAT" },
+            { pX: 0, pY: (-this.props.circle.radius * 2), pCol: "BLACK" },
+            { pX: 0, pY: ((this.props.circle.radius * 2) + 30), pCol: "BLACK" },
+            { pX: 0, pY: (-(this.props.circle.radius * 2) - 30), pCol: "BLACK" },
+            { pX: 26, pY: this.props.circle.radius, pCol: "BLACK" },
+            { pX: 26, pY: -this.props.circle.radius, pCol: "WHEAT" },
+            { pX: 26, pY: ((this.props.circle.radius * 2) + 15), pCol: "WHEAT" },
+            { pX: 26, pY: (-(this.props.circle.radius * 2) - 15), pCol: "WHEAT" },
+            { pX: -26, pY: this.props.circle.radius, pCol: "BLACK" },
+            { pX: -26, pY: -this.props.circle.radius, pCol: "WHEAT" },
+            { pX: -26, pY: ((this.props.circle.radius * 2) + 15), pCol: "WHEAT" },
+            { pX: -26, pY: (-(this.props.circle.radius * 2) - 15), pCol: "WHEAT" },
+            { pX: 52, pY: 0, pCol: "WHEAT" },
+            { pX: 52, pY: (this.props.circle.radius * 2), pCol: "BLACK" },
+            { pX: 52, pY: (-this.props.circle.radius * 2), pCol: "BLACK" },
+            { pX: -52, pY: 0, pCol: "WHEAT" },
+            { pX: -52, pY: (this.props.circle.radius * 2), pCol: "BLACK" },
+            { pX: -52, pY: (-this.props.circle.radius * 2), pCol: "BLACK" },
+        ];
     }
 
     eventRegister = () => {
@@ -82,31 +103,12 @@ class Game extends Component {
     }
 
     initCarromBoard = () => {
-        gameObjects = [
-            new CarromCoin(ctx, 0, 0, this.props.circle.radius, "DARKRED"),
-            new CarromCoin(ctx, 0, 300, this.props.circle.radius * 2, "REBECCAPURPLE"),
-            new CarromCoin(ctx, 0, (this.props.circle.radius * 2), this.props.circle.radius, "WHEAT"),
-            new CarromCoin(ctx, 0, (-this.props.circle.radius * 2), this.props.circle.radius, "BLACK"),
-            new CarromCoin(ctx, 0, ((this.props.circle.radius * 2) + 30), this.props.circle.radius, "BLACK"),
-            new CarromCoin(ctx, 0, (-(this.props.circle.radius * 2) - 30), this.props.circle.radius, "BLACK"),
-            new CarromCoin(ctx, 26, this.props.circle.radius, this.props.circle.radius, "BLACK"),
-            new CarromCoin(ctx, 26, -this.props.circle.radius, this.props.circle.radius, "WHEAT"),
-            new CarromCoin(ctx, 26, ((this.props.circle.radius * 2) + 15), this.props.circle.radius, "WHEAT"),
-            new CarromCoin(ctx, 26, (-(this.props.circle.radius * 2) - 15), this.props.circle.radius, "WHEAT"),
-            new CarromCoin(ctx, -26, this.props.circle.radius, this.props.circle.radius, "BLACK"),
-            new CarromCoin(ctx, -26, -this.props.circle.radius, this.props.circle.radius, "WHEAT"),
-            new CarromCoin(ctx, -26, ((this.props.circle.radius * 2) + 15), this.props.circle.radius, "WHEAT"),
-            new CarromCoin(ctx, -26, (-(this.props.circle.radius * 2) - 15), this.props.circle.radius, "WHEAT"),
-            new CarromCoin(ctx, 52, 0, this.props.circle.radius, "WHEAT"),
-            new CarromCoin(ctx, 52, (this.props.circle.radius * 2), this.props.circle.radius, "BLACK"),
-            new CarromCoin(ctx, 52, (-this.props.circle.radius * 2), this.props.circle.radius, "BLACK"),
-            new CarromCoin(ctx, -52, 0, this.props.circle.radius, "WHEAT"),
-            new CarromCoin(ctx, -52, (this.props.circle.radius * 2), this.props.circle.radius, "BLACK"),
-            new CarromCoin(ctx, -52, (-this.props.circle.radius * 2), this.props.circle.radius, "BLACK"),
-        ];
-        for (let index = 0; index < gameObjects.length; index++) {
+        for (let index = 0; index < this.pos.length; index++) {
+            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol);
             gameObjects[index].draw();
         }
+        gameObjects[this.pos.length] = new CarromCoin(ctx, 0, 300, this.props.circle.radius * 2, "REBECCAPURPLE");
+        gameObjects[this.pos.length].draw();
     }
 
     resetBoard = () => {
@@ -145,6 +147,5 @@ class Game extends Component {
         );
     }
 }
-// onClick={this.displayWork}
 
 export default Game;
