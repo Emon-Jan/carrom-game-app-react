@@ -68,7 +68,7 @@ class Game extends Component {
 
         console.log(gameObjects);
 
-        // requestAnimationFrame(timeStamp => this.carromLoop(timeStamp));
+        requestAnimationFrame(timeStamp => this.carromLoop(timeStamp));
     }
 
 
@@ -97,6 +97,22 @@ class Game extends Component {
                 if (this.circleCollide(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y, obj2.radius)) {
                     obj1.isColliding = true;
                     obj2.isColliding = true;
+
+                    let vCollision = { x: obj2.x - obj1.x, y: obj2.y - obj1.y };
+                    let distance = Math.sqrt((obj2.x - obj1.x) * (obj2.x - obj1.x) + (obj2.y - obj1.y) * (obj2.y - obj1.y));
+                    let vCollisionNorm = { x: vCollision.x / distance, y: vCollision.y / distance };
+                    let vRelativeVelocity = { x: obj1.vx - obj2.vx, y: obj1.vy - obj2.vy };
+                    let speed = vRelativeVelocity.x * vCollisionNorm.x + vRelativeVelocity.y * vCollisionNorm.y;
+
+                    if (speed < 0) {
+                        break;
+                    }
+
+                    let impulse = 2 * speed / (obj1.mass + obj2.mass);
+                    obj1.vx -= (impulse * obj2.mass * vCollisionNorm.x);
+                    obj1.vy -= (impulse * obj2.mass * vCollisionNorm.y);
+                    obj2.vx += (impulse * obj1.mass * vCollisionNorm.x);
+                    obj2.vy += (impulse * obj1.mass * vCollisionNorm.y);
                 }
             }
         }
@@ -104,10 +120,10 @@ class Game extends Component {
 
     initCarromBoard = () => {
         for (let index = 0; index < this.pos.length; index++) {
-            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol);
+            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 5);
             gameObjects[index].draw();
         }
-        gameObjects[this.pos.length] = new CarromCoin(ctx, 0, 300, this.props.circle.radius * 2, "REBECCAPURPLE");
+        gameObjects[this.pos.length] = new CarromCoin(ctx, 0, 300, this.props.circle.radius * 2, "REBECCAPURPLE", 50);
         gameObjects[this.pos.length].draw();
     }
 
