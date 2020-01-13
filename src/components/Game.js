@@ -8,6 +8,7 @@ let requestId;
 let requestIdForMouse;
 let gameObjects = [];
 let oldTimestamp = 0;
+let count = 0;
 class Game extends Component {
 
     constructor(props) {
@@ -48,11 +49,28 @@ class Game extends Component {
         });
 
         document.addEventListener("keydown", (event) => {
-            console.log(event.keyCode, event.timeStamp);
+            console.log(event.keyCode, event.timeStamp, count);
+            if (event.keyCode === 37) {
+                gameObjects[this.pos.length].vx -= 10;
+            }
+            if (event.keyCode === 39) {
+                gameObjects[this.pos.length].vx += 10;
+            }
+            if (event.keyCode === 32) {
+                count++;
+                if (count > 5 && count < 10) {
+                    gameObjects[this.pos.length].vy -= (5 * 5);
+                }
+                if (count > 10 && count < 20) {
+                    gameObjects[this.pos.length].vy -= (10 * 5);
+                }
+            }
+
         });
 
         document.addEventListener("keyup", (event) => {
             console.log(event.keyCode, event.timeStamp);
+            // gameObjects[this.pos.length].vy += 10;
         });
     }
 
@@ -84,7 +102,6 @@ class Game extends Component {
 
     detectCollision = () => {
         let obj1, obj2;
-
         for (let index = 0; index < gameObjects.length; index++) {
             gameObjects[index].isColliding = false;
         }
@@ -93,6 +110,7 @@ class Game extends Component {
             obj1 = gameObjects[i];
             for (let j = 0; j < gameObjects.length; j++) {
                 obj2 = gameObjects[j];
+                if (obj1 === obj2) continue;
 
                 if (this.circleCollide(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y, obj2.radius)) {
                     obj1.isColliding = true;
@@ -113,9 +131,14 @@ class Game extends Component {
                     obj1.vy -= (impulse * obj2.mass * vCollisionNorm.y);
                     obj2.vx += (impulse * obj1.mass * vCollisionNorm.x);
                     obj2.vy += (impulse * obj1.mass * vCollisionNorm.y);
+
+                }
+                else {
                 }
             }
         }
+
+        // console.log(obj1, obj2);
     }
 
     initCarromBoard = () => {
@@ -140,7 +163,7 @@ class Game extends Component {
         for (let index = 0; index < gameObjects.length; index++) {
             gameObjects[index].update(secPassed);
         }
-
+        this.detectCollision();
         ctx.clearRect(-400, -400, canvasRef.width, canvasRef.height);
 
         for (let index = 0; index < gameObjects.length; index++) {
