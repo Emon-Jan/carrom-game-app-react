@@ -17,10 +17,10 @@ class CarromCoin extends GameObject {
         this.context.stroke();
     }
 
-    update = (secondsPassed) => {
+    update = () => {
         //Move with set velocity
-        this.x += this.vx * secondsPassed;
-        this.y += this.vy * secondsPassed;
+        this.x += this.vx;
+        this.y += this.vy;
     }
 }
 

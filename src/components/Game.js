@@ -59,10 +59,10 @@ class Game extends Component {
             if (event.keyCode === 32) {
                 count++;
                 if (count > 5 && count < 10) {
-                    gameObjects[this.pos.length].vy -= (5 * 5);
+                    gameObjects[this.pos.length].vy -= 3;
                 }
                 if (count > 10 && count < 20) {
-                    gameObjects[this.pos.length].vy -= (10 * 5);
+                    gameObjects[this.pos.length].vy -= 5;
                 }
             }
 
@@ -70,6 +70,10 @@ class Game extends Component {
 
         document.addEventListener("keyup", (event) => {
             console.log(event.keyCode, event.timeStamp);
+
+            // if (gameObjects[this.pos.length].vx < 0) {
+            gameObjects[this.pos.length].vx = 0;
+            // }
             // gameObjects[this.pos.length].vy += 10;
         });
     }
@@ -86,7 +90,7 @@ class Game extends Component {
 
         console.log(gameObjects);
 
-        requestAnimationFrame(timeStamp => this.carromLoop(timeStamp));
+        requestAnimationFrame(this.carromLoop);
     }
 
 
@@ -108,6 +112,7 @@ class Game extends Component {
 
         for (let i = 0; i < gameObjects.length; i++) {
             obj1 = gameObjects[i];
+
             for (let j = 0; j < gameObjects.length; j++) {
                 obj2 = gameObjects[j];
                 if (obj1 === obj2) continue;
@@ -115,7 +120,7 @@ class Game extends Component {
                 if (this.circleCollide(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y, obj2.radius)) {
                     obj1.isColliding = true;
                     obj2.isColliding = true;
-
+                    let friction = 0.8;
                     let vCollision = { x: obj2.x - obj1.x, y: obj2.y - obj1.y };
                     let distance = Math.sqrt((obj2.x - obj1.x) * (obj2.x - obj1.x) + (obj2.y - obj1.y) * (obj2.y - obj1.y));
                     let vCollisionNorm = { x: vCollision.x / distance, y: vCollision.y / distance };
@@ -127,26 +132,40 @@ class Game extends Component {
                     }
 
                     let impulse = 2 * speed / (obj1.mass + obj2.mass);
-                    obj1.vx -= (impulse * obj2.mass * vCollisionNorm.x);
-                    obj1.vy -= (impulse * obj2.mass * vCollisionNorm.y);
-                    obj2.vx += (impulse * obj1.mass * vCollisionNorm.x);
-                    obj2.vy += (impulse * obj1.mass * vCollisionNorm.y);
+                    // obj1.vx -= (friction * impulse * obj2.mass * vCollisionNorm.x);
+                    // obj1.vy -= (friction * impulse * obj2.mass * vCollisionNorm.y);
+                    // obj2.vx += (friction * impulse * obj1.mass * vCollisionNorm.x);
+                    // obj2.vy += (friction * impulse * obj1.mass * vCollisionNorm.y);
+                    if (obj1.vx !== 0 || obj2.vx !== 0 || obj1.vy !== 0 || obj2.vy !== 0) {
+                        obj1.vx -= (friction * impulse * obj2.mass * vCollisionNorm.x);
+                        obj1.vy -= (friction * impulse * obj2.mass * vCollisionNorm.y);
+                        obj2.vx += (friction * impulse * obj1.mass * vCollisionNorm.x);
+                        obj2.vy += (friction * impulse * obj1.mass * vCollisionNorm.y);
+                    }
+                    // console.log(speed);
 
-                }
-                else {
                 }
             }
         }
+    }
 
-        // console.log(obj1, obj2);
+    carromBoundary = () => {
+        gameObjects.forEach(el => {
+            if (el.y - el.radius <= -400 || el.y + el.radius >= 400) {
+                el.vy = -el.vy
+            }
+            if (el.x - el.radius <= -400 || el.x + el.radius >= 400) {
+                el.vx = -el.vx
+            }
+        });
     }
 
     initCarromBoard = () => {
         for (let index = 0; index < this.pos.length; index++) {
-            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 5);
+            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 3);
             gameObjects[index].draw();
         }
-        gameObjects[this.pos.length] = new CarromCoin(ctx, 0, 300, this.props.circle.radius * 2, "REBECCAPURPLE", 50);
+        gameObjects[this.pos.length] = new CarromCoin(ctx, 0, 300, this.props.circle.radius * 2, "REBECCAPURPLE", 2);
         gameObjects[this.pos.length].draw();
     }
 
@@ -155,14 +174,15 @@ class Game extends Component {
     }
 
 
-    carromLoop = (timeStamp) => {
-        let secPassed = (timeStamp - oldTimestamp) / 1000;
-        oldTimestamp = timeStamp;
+    carromLoop = () => {
+        // let secPassed = (timeStamp - oldTimestamp) / 1000;
+        // oldTimestamp = timeStamp;
 
 
         for (let index = 0; index < gameObjects.length; index++) {
-            gameObjects[index].update(secPassed);
+            gameObjects[index].update();
         }
+        this.carromBoundary();
         this.detectCollision();
         ctx.clearRect(-400, -400, canvasRef.width, canvasRef.height);
 
@@ -170,7 +190,7 @@ class Game extends Component {
             gameObjects[index].draw();
         }
 
-        requestId = requestAnimationFrame(timeStamp => this.carromLoop(timeStamp));
+        requestId = requestAnimationFrame(this.carromLoop);
     }
 
     mouseEvent = () => {
