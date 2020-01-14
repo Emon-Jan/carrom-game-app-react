@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import CarromCoin from "../models/CarromCoin";
+import BoardImage from "../carrom.png"
 import "./Game.css"
 
 let ctx;
@@ -7,10 +8,10 @@ let canvasRef;
 let requestId;
 let requestIdForMouse;
 let gameObjects = [];
-let oldTimestamp = 0;
 let count = 0;
 
 let friction = 0.1;
+let image;
 class Game extends Component {
 
     constructor(props) {
@@ -20,27 +21,32 @@ class Game extends Component {
             x: undefined,
             y: undefined
         };
+
         this.pos = [
             { pX: 0, pY: 0, pCol: "DARKRED" },
             { pX: 0, pY: (this.props.circle.radius * 2), pCol: "WHEAT" },
-            { pX: 0, pY: (-this.props.circle.radius * 2), pCol: "BLACK" },
-            { pX: 0, pY: ((this.props.circle.radius * 2) + 30), pCol: "BLACK" },
-            { pX: 0, pY: (-(this.props.circle.radius * 2) - 30), pCol: "BLACK" },
-            { pX: 26, pY: this.props.circle.radius, pCol: "BLACK" },
-            { pX: 26, pY: -this.props.circle.radius, pCol: "WHEAT" },
-            { pX: 26, pY: ((this.props.circle.radius * 2) + 15), pCol: "WHEAT" },
-            { pX: 26, pY: (-(this.props.circle.radius * 2) - 15), pCol: "WHEAT" },
-            { pX: -26, pY: this.props.circle.radius, pCol: "BLACK" },
-            { pX: -26, pY: -this.props.circle.radius, pCol: "WHEAT" },
-            { pX: -26, pY: ((this.props.circle.radius * 2) + 15), pCol: "WHEAT" },
-            { pX: -26, pY: (-(this.props.circle.radius * 2) - 15), pCol: "WHEAT" },
-            { pX: 52, pY: 0, pCol: "WHEAT" },
-            { pX: 52, pY: (this.props.circle.radius * 2), pCol: "BLACK" },
-            { pX: 52, pY: (-this.props.circle.radius * 2), pCol: "BLACK" },
-            { pX: -52, pY: 0, pCol: "WHEAT" },
-            { pX: -52, pY: (this.props.circle.radius * 2), pCol: "BLACK" },
-            { pX: -52, pY: (-this.props.circle.radius * 2), pCol: "BLACK" },
+            { pX: 0, pY: (-this.props.circle.radius * 2), pCol: "DARKSLATEGRAY" },
+            { pX: 0, pY: ((this.props.circle.radius * 2) + 32), pCol: "DARKSLATEGRAY" },
+            { pX: 0, pY: (-(this.props.circle.radius * 2) - 32), pCol: "DARKSLATEGRAY" },
+            { pX: 27, pY: this.props.circle.radius, pCol: "DARKSLATEGRAY" },
+            { pX: 27, pY: -this.props.circle.radius, pCol: "WHEAT" },
+            { pX: 27, pY: ((this.props.circle.radius * 2) + 16), pCol: "WHEAT" },
+            { pX: 27, pY: (-(this.props.circle.radius * 2) - 16), pCol: "WHEAT" },
+            { pX: -27, pY: this.props.circle.radius, pCol: "DARKSLATEGRAY" },
+            { pX: -27, pY: -this.props.circle.radius, pCol: "WHEAT" },
+            { pX: -27, pY: ((this.props.circle.radius * 2) + 16), pCol: "WHEAT" },
+            { pX: -27, pY: (-(this.props.circle.radius * 2) - 16), pCol: "WHEAT" },
+            { pX: 54, pY: 0, pCol: "WHEAT" },
+            { pX: 54, pY: (this.props.circle.radius * 2), pCol: "DARKSLATEGRAY" },
+            { pX: 54, pY: (-this.props.circle.radius * 2), pCol: "DARKSLATEGRAY" },
+            { pX: -54, pY: 0, pCol: "WHEAT" },
+            { pX: -54, pY: (this.props.circle.radius * 2), pCol: "DARKSLATEGRAY" },
+            { pX: -54, pY: (-this.props.circle.radius * 2), pCol: "DARKSLATEGRAY" },
         ];
+    }
+
+    componentDidMount() {
+        this.init();
     }
 
     eventRegister = () => {
@@ -53,10 +59,10 @@ class Game extends Component {
         document.addEventListener("keydown", (event) => {
             console.log(event.keyCode, event.timeStamp, count);
             if (event.keyCode === 37) {
-                gameObjects[this.pos.length].vx -= 10;
+                gameObjects[this.pos.length].vx -= 5;
             }
             if (event.keyCode === 39) {
-                gameObjects[this.pos.length].vx += 10;
+                gameObjects[this.pos.length].vx += 5;
             }
             if (event.keyCode === 32) {
                 count++;
@@ -73,28 +79,27 @@ class Game extends Component {
         document.addEventListener("keyup", (event) => {
             console.log(event.keyCode, event.timeStamp);
             gameObjects[this.pos.length].vx = 0;
+            count = 0;
         });
     }
 
     init = () => {
         canvasRef = this.canvas.current;
         ctx = canvasRef.getContext("2d");
+        image = new Image();
+        image.src = BoardImage;
+
         canvasRef.width = 800;
         canvasRef.height = 800;
         ctx.translate(400, 400);
-
         this.eventRegister();
         this.initCarromBoard();
 
         console.log(gameObjects);
 
-        requestAnimationFrame(this.carromLoop);
-    }
-
-
-    componentDidMount() {
-        this.init();
-        // this.mouseEvent();
+        image.onload = () => {
+            requestAnimationFrame(this.carromLoop);
+        };
     }
 
     circleCollide = (x1, y1, r1, x2, y2, r2) => {
@@ -124,11 +129,7 @@ class Game extends Component {
                     let vRelativeVelocity = { x: obj1.vx - obj2.vx, y: obj1.vy - obj2.vy };
                     let speed = vRelativeVelocity.x * vCollisionNorm.x + vRelativeVelocity.y * vCollisionNorm.y;
 
-                    // if (speed > friction) {
-                    //     speed -= friction;
-                    // }
                     if (speed < 0) { break; }
-                    // else { speed = 0; }
 
                     let impulse = 2 * speed / (obj1.mass + obj2.mass);
                     obj1.vx -= (impulse * obj2.mass * vCollisionNorm.x);
@@ -143,10 +144,10 @@ class Game extends Component {
 
     carromBoundary = () => {
         gameObjects.forEach(el => {
-            if (el.y - el.radius <= -400 || el.y + el.radius >= 400) {
+            if (el.y - el.radius <= -350 || el.y + el.radius >= 350) {
                 el.vy = -el.vy
             }
-            if (el.x - el.radius <= -400 || el.x + el.radius >= 400) {
+            if (el.x - el.radius <= -350 || el.x + el.radius >= 350) {
                 el.vx = -el.vx
             }
         });
@@ -170,7 +171,7 @@ class Game extends Component {
             gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 5);
             gameObjects[index].draw();
         }
-        gameObjects[this.pos.length] = new CarromCoin(ctx, 0, 300, this.props.circle.radius * 2, "REBECCAPURPLE", 10);
+        gameObjects[this.pos.length] = new CarromCoin(ctx, 0, 225, this.props.circle.radius + 10, "GAINSBORO", 15);
         gameObjects[this.pos.length].draw();
     }
 
@@ -180,17 +181,16 @@ class Game extends Component {
 
 
     carromLoop = () => {
-        // let secPassed = (timeStamp - oldTimestamp) / 1000;
-        // oldTimestamp = timeStamp;
-
         for (let index = 0; index < gameObjects.length; index++) {
             gameObjects[index].update();
             this.applyFriction(gameObjects[index]);
         }
         this.carromBoundary();
         this.detectCollision();
+
         ctx.clearRect(-400, -400, canvasRef.width, canvasRef.height);
 
+        ctx.drawImage(image, -400, -400, 800, 800);
         for (let index = 0; index < gameObjects.length; index++) {
             gameObjects[index].draw();
         }

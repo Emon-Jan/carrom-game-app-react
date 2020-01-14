@@ -5,7 +5,7 @@ import './App.css';
 class App extends Component {
   state = {
     circle: {
-      radius: 15
+      radius: 16
     }
   }
 
