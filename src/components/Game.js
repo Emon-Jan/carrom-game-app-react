@@ -9,6 +9,8 @@ let requestIdForMouse;
 let gameObjects = [];
 let oldTimestamp = 0;
 let count = 0;
+
+let friction = 0.1;
 class Game extends Component {
 
     constructor(props) {
@@ -59,10 +61,10 @@ class Game extends Component {
             if (event.keyCode === 32) {
                 count++;
                 if (count > 5 && count < 10) {
-                    gameObjects[this.pos.length].vy -= 3;
+                    gameObjects[this.pos.length].vy -= 6;
                 }
                 if (count > 10 && count < 20) {
-                    gameObjects[this.pos.length].vy -= 5;
+                    gameObjects[this.pos.length].vy -= 8;
                 }
             }
 
@@ -70,11 +72,7 @@ class Game extends Component {
 
         document.addEventListener("keyup", (event) => {
             console.log(event.keyCode, event.timeStamp);
-
-            // if (gameObjects[this.pos.length].vx < 0) {
             gameObjects[this.pos.length].vx = 0;
-            // }
-            // gameObjects[this.pos.length].vy += 10;
         });
     }
 
@@ -101,7 +99,7 @@ class Game extends Component {
 
     circleCollide = (x1, y1, r1, x2, y2, r2) => {
         let squareCircleDistance = ((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2));
-        return squareCircleDistance <= ((r1 + r2) * (r1 + r2))
+        return squareCircleDistance <= ((r1 + r2) * (r1 + r2));
     }
 
     detectCollision = () => {
@@ -120,29 +118,23 @@ class Game extends Component {
                 if (this.circleCollide(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y, obj2.radius)) {
                     obj1.isColliding = true;
                     obj2.isColliding = true;
-                    let friction = 0.8;
                     let vCollision = { x: obj2.x - obj1.x, y: obj2.y - obj1.y };
                     let distance = Math.sqrt((obj2.x - obj1.x) * (obj2.x - obj1.x) + (obj2.y - obj1.y) * (obj2.y - obj1.y));
                     let vCollisionNorm = { x: vCollision.x / distance, y: vCollision.y / distance };
                     let vRelativeVelocity = { x: obj1.vx - obj2.vx, y: obj1.vy - obj2.vy };
                     let speed = vRelativeVelocity.x * vCollisionNorm.x + vRelativeVelocity.y * vCollisionNorm.y;
 
-                    if (speed < 0) {
-                        break;
-                    }
+                    // if (speed > friction) {
+                    //     speed -= friction;
+                    // }
+                    if (speed < 0) { break; }
+                    // else { speed = 0; }
 
                     let impulse = 2 * speed / (obj1.mass + obj2.mass);
-                    // obj1.vx -= (friction * impulse * obj2.mass * vCollisionNorm.x);
-                    // obj1.vy -= (friction * impulse * obj2.mass * vCollisionNorm.y);
-                    // obj2.vx += (friction * impulse * obj1.mass * vCollisionNorm.x);
-                    // obj2.vy += (friction * impulse * obj1.mass * vCollisionNorm.y);
-                    if (obj1.vx !== 0 || obj2.vx !== 0 || obj1.vy !== 0 || obj2.vy !== 0) {
-                        obj1.vx -= (friction * impulse * obj2.mass * vCollisionNorm.x);
-                        obj1.vy -= (friction * impulse * obj2.mass * vCollisionNorm.y);
-                        obj2.vx += (friction * impulse * obj1.mass * vCollisionNorm.x);
-                        obj2.vy += (friction * impulse * obj1.mass * vCollisionNorm.y);
-                    }
-                    // console.log(speed);
+                    obj1.vx -= (impulse * obj2.mass * vCollisionNorm.x);
+                    obj1.vy -= (impulse * obj2.mass * vCollisionNorm.y);
+                    obj2.vx += (impulse * obj1.mass * vCollisionNorm.x);
+                    obj2.vy += (impulse * obj1.mass * vCollisionNorm.y);
 
                 }
             }
@@ -160,12 +152,25 @@ class Game extends Component {
         });
     }
 
+    applyFriction = (obj) => {
+        let speed = Math.sqrt(obj.vx * obj.vx + obj.vy * obj.vy),
+            angle = Math.atan2(obj.vy, obj.vx);
+        if (speed > friction) {
+            speed -= friction;
+        } else {
+            speed = 0;
+        }
+        obj.vx = Math.cos(angle) * speed;
+        obj.vy = Math.sin(angle) * speed;
+    }
+
+
     initCarromBoard = () => {
         for (let index = 0; index < this.pos.length; index++) {
-            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 3);
+            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 5);
             gameObjects[index].draw();
         }
-        gameObjects[this.pos.length] = new CarromCoin(ctx, 0, 300, this.props.circle.radius * 2, "REBECCAPURPLE", 2);
+        gameObjects[this.pos.length] = new CarromCoin(ctx, 0, 300, this.props.circle.radius * 2, "REBECCAPURPLE", 10);
         gameObjects[this.pos.length].draw();
     }
 
@@ -178,9 +183,9 @@ class Game extends Component {
         // let secPassed = (timeStamp - oldTimestamp) / 1000;
         // oldTimestamp = timeStamp;
 
-
         for (let index = 0; index < gameObjects.length; index++) {
             gameObjects[index].update();
+            this.applyFriction(gameObjects[index]);
         }
         this.carromBoundary();
         this.detectCollision();
