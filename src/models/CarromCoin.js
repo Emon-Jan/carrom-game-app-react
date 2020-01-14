@@ -17,6 +17,10 @@ class CarromCoin extends GameObject {
         this.context.stroke();
     }
 
+    rotate = (r) => {
+        this.context.rotate(r);
+    }
+
     update = () => {
         //Move with set velocity
         this.x += this.vx;

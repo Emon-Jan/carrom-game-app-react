@@ -8,6 +8,7 @@ let canvasRef;
 let requestId;
 let requestIdForMouse;
 let gameObjects = [];
+let keys = [];
 let count = 0;
 
 let friction = 0.1;
@@ -50,6 +51,7 @@ class Game extends Component {
     }
 
     eventRegister = () => {
+
         document.addEventListener("mousemove", (event) => {
             var rect = canvasRef.getBoundingClientRect();
             this.mouse.x = event.x - rect.left - 400;
@@ -57,29 +59,15 @@ class Game extends Component {
         });
 
         document.addEventListener("keydown", (event) => {
-            console.log(event.keyCode, event.timeStamp, count);
-            if (event.keyCode === 37) {
-                gameObjects[this.pos.length].vx -= 5;
-            }
-            if (event.keyCode === 39) {
-                gameObjects[this.pos.length].vx += 5;
-            }
-            if (event.keyCode === 32) {
-                count++;
-                if (count > 5 && count < 10) {
-                    gameObjects[this.pos.length].vy -= 6;
-                }
-                if (count > 10 && count < 20) {
-                    gameObjects[this.pos.length].vy -= 8;
-                }
-            }
-
+            console.log(event.keyCode, event.timeStamp, event.which);
+            keys[event.keyCode] = true;
         });
 
         document.addEventListener("keyup", (event) => {
             console.log(event.keyCode, event.timeStamp);
-            gameObjects[this.pos.length].vx = 0;
-            count = 0;
+            keys[event.keyCode] = false;
+            // gameObjects[this.pos.length].vx = 0;
+            // count = 0;
         });
     }
 
@@ -132,6 +120,18 @@ class Game extends Component {
         }
         obj.vx = Math.cos(angle) * speed;
         obj.vy = Math.sin(angle) * speed;
+    }
+
+    strikerMovement = () => {
+        if (keys[37] && (gameObjects[this.pos.length].x - this.props.circle.radius) > -200) {
+            gameObjects[this.pos.length].x -= 5;
+        }
+        else if (keys[39] && (gameObjects[this.pos.length].x + this.props.circle.radius) < 200) {
+            gameObjects[this.pos.length].x += 5;
+        }
+        else if (keys[32]) {
+            gameObjects[this.pos.length].vy -= 1;
+        }
     }
 
 
@@ -189,7 +189,7 @@ class Game extends Component {
         }
         this.carromBoundary();
         this.detectCollision();
-
+        this.strikerMovement();
         ctx.clearRect(-400, -400, canvasRef.width, canvasRef.height);
 
         ctx.drawImage(image, -400, -400, 800, 800);
