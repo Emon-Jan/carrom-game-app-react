@@ -102,6 +102,43 @@ class Game extends Component {
         };
     }
 
+    initCarromBoard = () => {
+        for (let index = 0; index < this.pos.length; index++) {
+            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 5);
+            gameObjects[index].draw();
+        }
+        gameObjects[this.pos.length] = new CarromCoin(ctx, 0, 225, this.props.circle.radius + 10, "GAINSBORO", 15);
+        gameObjects[this.pos.length].draw();
+    }
+
+    carromBoundary = () => {
+        gameObjects.forEach(el => {
+            if (el.y - el.radius <= -350 || el.y + el.radius >= 350) {
+                el.vy = -el.vy
+            }
+            if (el.x - el.radius <= -350 || el.x + el.radius >= 350) {
+                el.vx = -el.vx
+            }
+        });
+    }
+
+    applyFriction = (obj) => {
+        let speed = Math.sqrt(obj.vx * obj.vx + obj.vy * obj.vy),
+            angle = Math.atan2(obj.vy, obj.vx);
+        if (speed > friction) {
+            speed -= friction;
+        } else {
+            speed = 0;
+        }
+        obj.vx = Math.cos(angle) * speed;
+        obj.vy = Math.sin(angle) * speed;
+    }
+
+
+    resetBoard = () => {
+        this.initCarromBoard();
+    }
+
     circleCollide = (x1, y1, r1, x2, y2, r2) => {
         let squareCircleDistance = ((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2));
         return squareCircleDistance <= ((r1 + r2) * (r1 + r2));
@@ -142,42 +179,7 @@ class Game extends Component {
         }
     }
 
-    carromBoundary = () => {
-        gameObjects.forEach(el => {
-            if (el.y - el.radius <= -350 || el.y + el.radius >= 350) {
-                el.vy = -el.vy
-            }
-            if (el.x - el.radius <= -350 || el.x + el.radius >= 350) {
-                el.vx = -el.vx
-            }
-        });
-    }
 
-    applyFriction = (obj) => {
-        let speed = Math.sqrt(obj.vx * obj.vx + obj.vy * obj.vy),
-            angle = Math.atan2(obj.vy, obj.vx);
-        if (speed > friction) {
-            speed -= friction;
-        } else {
-            speed = 0;
-        }
-        obj.vx = Math.cos(angle) * speed;
-        obj.vy = Math.sin(angle) * speed;
-    }
-
-
-    initCarromBoard = () => {
-        for (let index = 0; index < this.pos.length; index++) {
-            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 5);
-            gameObjects[index].draw();
-        }
-        gameObjects[this.pos.length] = new CarromCoin(ctx, 0, 225, this.props.circle.radius + 10, "GAINSBORO", 15);
-        gameObjects[this.pos.length].draw();
-    }
-
-    resetBoard = () => {
-        this.initCarromBoard();
-    }
 
 
     carromLoop = () => {
