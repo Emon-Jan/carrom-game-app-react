@@ -7,7 +7,6 @@ import StrikerCoin from "../models/StrikerCoin";
 let ctx;
 let canvasRef;
 let requestId;
-let requestIdForMouse;
 let gameObjects = [];
 let keys = [];
 let count = 0;
@@ -137,7 +136,20 @@ class Game extends Component {
             gameObjects[this.pos.length].vx += Math.cos(gameObjects[this.pos.length].angle) * 2;
             gameObjects[this.pos.length].vy += Math.sin(gameObjects[this.pos.length].angle) * 2;
         }
+        else {
+            if (gameObjects[this.pos.length].x !== 0 && gameObjects[this.pos.length].y !== 225) {
+                gameObjects[this.pos.length].x = 0;
+                gameObjects[this.pos.length].y = 225;
+            }
+        }
     }
+
+    // resetStriker = () => {
+    //     if (onStrikePosition) {
+    //         gameObjects[this.pos.length].x = 0;
+    //         gameObjects[this.pos.length].y = 225;
+    //     }
+    // }
 
 
     resetBoard = () => {
@@ -205,11 +217,6 @@ class Game extends Component {
         }
 
         requestId = requestAnimationFrame(this.carromLoop);
-    }
-
-    mouseEvent = () => {
-        new CarromCoin(ctx, this.mouse.x, this.mouse.y, 10, "green").draw();
-        requestIdForMouse = requestAnimationFrame(this.mouseEvent);
     }
 
     render() {
