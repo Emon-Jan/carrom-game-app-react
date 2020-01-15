@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import CarromCoin from "../models/CarromCoin";
 import BoardImage from "../carrom.png"
 import "./Game.css"
+import StrikerCoin from "../models/StrikerCoin";
 
 let ctx;
 let canvasRef;
@@ -13,6 +14,7 @@ let count = 0;
 
 let friction = 0.1;
 let image;
+let onStrikePosition = true;
 class Game extends Component {
 
     constructor(props) {
@@ -83,6 +85,7 @@ class Game extends Component {
         this.eventRegister();
         this.initCarromBoard();
 
+        // this.strikerDirection(this.mouse.x, this.mouse.y);
         console.log(gameObjects);
 
         image.onload = () => {
@@ -95,7 +98,7 @@ class Game extends Component {
             gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 5);
             gameObjects[index].draw();
         }
-        gameObjects[this.pos.length] = new CarromCoin(ctx, 0, 225, this.props.circle.radius + 10, "GAINSBORO", 15);
+        gameObjects[this.pos.length] = new StrikerCoin(ctx, 0, 225, this.props.circle.radius + 10, "GAINSBORO", 15);
         gameObjects[this.pos.length].draw();
     }
 
@@ -129,8 +132,10 @@ class Game extends Component {
         else if (keys[39] && (gameObjects[this.pos.length].x + this.props.circle.radius) < 200) {
             gameObjects[this.pos.length].x += 5;
         }
-        else if (keys[32]) {
-            gameObjects[this.pos.length].vy -= 1;
+
+        if (keys[32]) {
+            gameObjects[this.pos.length].vx += Math.cos(gameObjects[this.pos.length].angle) * 2;
+            gameObjects[this.pos.length].vy += Math.sin(gameObjects[this.pos.length].angle) * 2;
         }
     }
 
@@ -179,12 +184,13 @@ class Game extends Component {
         }
     }
 
-
-
-
     carromLoop = () => {
         for (let index = 0; index < gameObjects.length; index++) {
-            gameObjects[index].update();
+            if (index !== (gameObjects.length - 1)) {
+                gameObjects[index].update();
+            } else {
+                gameObjects[index].update(this.mouse.x, this.mouse.y);
+            }
             this.applyFriction(gameObjects[index]);
         }
         this.carromBoundary();
@@ -193,6 +199,7 @@ class Game extends Component {
         ctx.clearRect(-400, -400, canvasRef.width, canvasRef.height);
 
         ctx.drawImage(image, -400, -400, 800, 800);
+
         for (let index = 0; index < gameObjects.length; index++) {
             gameObjects[index].draw();
         }
