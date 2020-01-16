@@ -76,6 +76,9 @@ class Game extends Component {
         ctx = canvasRef.getContext("2d");
         image = new Image();
         image.src = BoardImage;
+        image.style = "color: red";
+        console.log(image);
+
 
         canvasRef.width = 800;
         canvasRef.height = 800;
@@ -91,10 +94,10 @@ class Game extends Component {
 
     initCarromBoard = () => {
         for (let index = 0; index < this.pos.length; index++) {
-            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 8);
+            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 10);
             gameObjects[index].draw();
         }
-        gameObjects[this.pos.length] = new StrikerCoin(ctx, 0, 225, this.props.circle.radius + 10, "GAINSBORO", 20);
+        gameObjects[this.pos.length] = new StrikerCoin(ctx, 0, 225, this.props.circle.radius + 10, "GAINSBORO", 10);
         gameObjects[this.pos.length].draw();
 
         hole = [
@@ -112,11 +115,11 @@ class Game extends Component {
 
     carromBoundary = () => {
         gameObjects.forEach(el => {
-            if (el.y - el.radius <= -350 || el.y + el.radius >= 350) {
-                el.vy = -el.vy
-            }
-            if (el.x - el.radius <= -350 || el.x + el.radius >= 350) {
+            if (el.x + el.vx < -350 + el.radius || el.x + el.vx > 350 - el.radius) {
                 el.vx = -el.vx
+            }
+            if (el.y + el.vy < -350 + el.radius || el.y + el.vy > 350 - el.radius) {
+                el.vy = -el.vy
             }
         });
     }
@@ -145,12 +148,12 @@ class Game extends Component {
             gameObjects[gameObjects.length - 1].vx += Math.cos(gameObjects[gameObjects.length - 1].angle) * 2;
             gameObjects[gameObjects.length - 1].vy += Math.sin(gameObjects[gameObjects.length - 1].angle) * 2;
         }
-        else {
-            if (gameObjects[gameObjects.length - 1].x !== 0 && gameObjects[gameObjects.length - 1].y !== 225) {
-                gameObjects[gameObjects.length - 1].x = 0;
-                gameObjects[gameObjects.length - 1].y = 225;
-            }
-        }
+        // else {
+        //     if (gameObjects[gameObjects.length - 1].x !== 0 && gameObjects[gameObjects.length - 1].y !== 225) {
+        //         gameObjects[gameObjects.length - 1].x = 0;
+        //         gameObjects[gameObjects.length - 1].y = 225;
+        //     }
+        // }
     }
 
     resetBoard = () => {
@@ -178,6 +181,7 @@ class Game extends Component {
                 if (this.circleCollide(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y, obj2.radius)) {
                     obj1.isColliding = true;
                     obj2.isColliding = true;
+                    // this.resolveCollision(obj1, obj2);
                     let vCollision = { x: obj2.x - obj1.x, y: obj2.y - obj1.y };
                     let distance = Math.sqrt((obj2.x - obj1.x) * (obj2.x - obj1.x) + (obj2.y - obj1.y) * (obj2.y - obj1.y));
                     let vCollisionNorm = { x: vCollision.x / distance, y: vCollision.y / distance };
@@ -192,10 +196,60 @@ class Game extends Component {
                     obj2.vx += (impulse * obj1.mass * vCollisionNorm.x);
                     obj2.vy += (impulse * obj1.mass * vCollisionNorm.y);
 
+
                 }
             }
         }
     }
+
+    rotate = (obj, angle) => {
+        const rotatedVelocities = {
+            x: obj.vx * Math.cos(angle) - obj.vy * Math.sin(angle),
+            y: obj.vx * Math.sin(angle) + obj.vy * Math.cos(angle)
+        };
+        return rotatedVelocities;
+    }
+
+
+    resolveCollision = (particle, otherParticle) => {
+        const xVelocityDiff = particle.vx - otherParticle.vx;
+        const yVelocityDiff = particle.vy - otherParticle.vy;
+
+        const xDist = otherParticle.x - particle.x;
+        const yDist = otherParticle.y - particle.y;
+
+        // Prevent accidental overlap of particles
+        if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
+
+            // Grab angle between the two colliding particles
+            const angle = -Math.atan2(otherParticle.y - particle.y, otherParticle.x - particle.x);
+
+            // Store mass in var for better readability in collision equation
+            const m1 = particle.mass;
+            const m2 = otherParticle.mass;
+
+            // Velocity before equation
+            const u1 = this.rotate(particle, angle);
+            const u2 = this.rotate(otherParticle, angle);
+
+            // Velocity after 1d collision equation
+            const v1 = { x: u1.x * (m1 - m2) / (m1 + m2) + u2.x * 2 * m2 / (m1 + m2), y: u1.y };
+            const v2 = { x: u2.x * (m1 - m2) / (m1 + m2) + u1.x * 2 * m2 / (m1 + m2), y: u2.y };
+
+            // Final velocity after rotating axis back to original location
+            const vFinal1 = this.rotate(v1, -angle);
+            const vFinal2 = this.rotate(v2, -angle);
+
+            // Swap particle velocities for realistic bounce effect
+            particle.vx = vFinal1.x;
+            particle.vy = vFinal1.y;
+
+            otherParticle.vx = vFinal2.x;
+            otherParticle.vy = vFinal2.y;
+        }
+    }
+
+
 
     detectCollisionWithHole = () => {
         let obj1, obj2;
