@@ -52,9 +52,10 @@ class Game extends Component {
         this.init();
     }
 
-    eventRegister = () => {
+    init = () => {
+        canvasRef = this.canvas.current;
 
-        document.addEventListener("mousemove", (event) => {
+        canvasRef.addEventListener("mousemove", (event) => {
             var rect = canvasRef.getBoundingClientRect();
             this.mouse.x = event.x - rect.left - 400;
             this.mouse.y = event.y - rect.top - 400;
@@ -71,10 +72,7 @@ class Game extends Component {
             // gameObjects[this.pos.length].vx = 0;
             // count = 0;
         });
-    }
 
-    init = () => {
-        canvasRef = this.canvas.current;
         ctx = canvasRef.getContext("2d");
         image = new Image();
         image.src = BoardImage;
@@ -82,7 +80,6 @@ class Game extends Component {
         canvasRef.width = 800;
         canvasRef.height = 800;
         ctx.translate(400, 400);
-        this.eventRegister();
         this.initCarromBoard();
 
         console.log(gameObjects);
@@ -94,7 +91,7 @@ class Game extends Component {
 
     initCarromBoard = () => {
         for (let index = 0; index < this.pos.length; index++) {
-            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 10);
+            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 8);
             gameObjects[index].draw();
         }
         gameObjects[this.pos.length] = new StrikerCoin(ctx, 0, 225, this.props.circle.radius + 10, "GAINSBORO", 20);
