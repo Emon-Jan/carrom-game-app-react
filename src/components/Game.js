@@ -62,12 +62,12 @@ class Game extends Component {
         });
 
         document.addEventListener("keydown", (event) => {
-            console.log(event.keyCode, event.timeStamp, event.which);
+            // console.log(event.keyCode, event.timeStamp, event.which);
             keys[event.keyCode] = true;
         });
 
         document.addEventListener("keyup", (event) => {
-            console.log(event.keyCode, event.timeStamp);
+            // console.log(event.keyCode, event.timeStamp);
             keys[event.keyCode] = false;
             // gameObjects[this.pos.length].vx = 0;
             // count = 0;
@@ -145,8 +145,8 @@ class Game extends Component {
         }
 
         if (keys[32]) {
-            gameObjects[gameObjects.length - 1].vx += Math.cos(gameObjects[gameObjects.length - 1].angle) * 2;
-            gameObjects[gameObjects.length - 1].vy += Math.sin(gameObjects[gameObjects.length - 1].angle) * 2;
+            gameObjects[gameObjects.length - 1].vx += Math.cos(gameObjects[gameObjects.length - 1].angle) * 5;
+            gameObjects[gameObjects.length - 1].vy += Math.sin(gameObjects[gameObjects.length - 1].angle) * 5;
         }
         // else {
         //     if (gameObjects[gameObjects.length - 1].x !== 0 && gameObjects[gameObjects.length - 1].y !== 225) {
