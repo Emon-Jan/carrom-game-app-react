@@ -8,13 +8,13 @@ let ctx;
 let canvasRef;
 let requestId;
 let gameObjects = [];
-let striker;
 let keys = [];
-let count = 0;
 
 let friction = 0.5;
 let image;
 let hole = [];
+let strike = false;
+let power = 0;
 class Game extends Component {
 
     constructor(props) {
@@ -69,23 +69,18 @@ class Game extends Component {
         document.addEventListener("keyup", (event) => {
             // console.log(event.keyCode, event.timeStamp);
             keys[event.keyCode] = false;
-            // gameObjects[this.pos.length].vx = 0;
-            // count = 0;
         });
 
         ctx = canvasRef.getContext("2d");
         image = new Image();
         image.src = BoardImage;
-        image.style = "color: red";
-        console.log(image);
-
 
         canvasRef.width = 800;
         canvasRef.height = 800;
         ctx.translate(400, 400);
         this.initCarromBoard();
 
-        console.log(gameObjects);
+        // console.log(gameObjects);
 
         image.onload = () => {
             requestAnimationFrame(this.carromLoop);
@@ -93,6 +88,8 @@ class Game extends Component {
     }
 
     initCarromBoard = () => {
+        strike = false;
+        power = 0;
         for (let index = 0; index < this.pos.length; index++) {
             gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 10);
             gameObjects[index].draw();
@@ -143,17 +140,28 @@ class Game extends Component {
         else if (keys[39] && (gameObjects[gameObjects.length - 1].x + this.props.circle.radius) < 200) {
             gameObjects[gameObjects.length - 1].x += 5;
         }
-
-        if (keys[32]) {
-            gameObjects[gameObjects.length - 1].vx += Math.cos(gameObjects[gameObjects.length - 1].angle) * 5;
-            gameObjects[gameObjects.length - 1].vy += Math.sin(gameObjects[gameObjects.length - 1].angle) * 5;
+        else if (keys[38]) {
+            if (power <= 100) {
+                power += 0.5;
+            }
         }
-        // else {
-        //     if (gameObjects[gameObjects.length - 1].x !== 0 && gameObjects[gameObjects.length - 1].y !== 225) {
-        //         gameObjects[gameObjects.length - 1].x = 0;
-        //         gameObjects[gameObjects.length - 1].y = 225;
-        //     }
-        // }
+        else if (keys[40]) {
+            if (power > 0) {
+                power -= 0.5;
+            }
+        }
+        // console.log(power);
+
+
+        if (keys[32] && !strike) {
+            gameObjects[gameObjects.length - 1].vx = Math.cos(gameObjects[gameObjects.length - 1].angle) * power;
+            gameObjects[gameObjects.length - 1].vy = Math.sin(gameObjects[gameObjects.length - 1].angle) * power;
+            strike = true;
+        }
+        else {
+            if (gameObjects[gameObjects.length - 1].x !== 0 && gameObjects[gameObjects.length - 1].y !== 225) {
+            }
+        }
     }
 
     resetBoard = () => {
@@ -181,7 +189,6 @@ class Game extends Component {
                 if (this.circleCollide(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y, obj2.radius)) {
                     obj1.isColliding = true;
                     obj2.isColliding = true;
-                    // this.resolveCollision(obj1, obj2);
                     let vCollision = { x: obj2.x - obj1.x, y: obj2.y - obj1.y };
                     let distance = Math.sqrt((obj2.x - obj1.x) * (obj2.x - obj1.x) + (obj2.y - obj1.y) * (obj2.y - obj1.y));
                     let vCollisionNorm = { x: vCollision.x / distance, y: vCollision.y / distance };
@@ -195,61 +202,10 @@ class Game extends Component {
                     obj1.vy -= (impulse * obj2.mass * vCollisionNorm.y);
                     obj2.vx += (impulse * obj1.mass * vCollisionNorm.x);
                     obj2.vy += (impulse * obj1.mass * vCollisionNorm.y);
-
-
                 }
             }
         }
     }
-
-    rotate = (obj, angle) => {
-        const rotatedVelocities = {
-            x: obj.vx * Math.cos(angle) - obj.vy * Math.sin(angle),
-            y: obj.vx * Math.sin(angle) + obj.vy * Math.cos(angle)
-        };
-        return rotatedVelocities;
-    }
-
-
-    resolveCollision = (particle, otherParticle) => {
-        const xVelocityDiff = particle.vx - otherParticle.vx;
-        const yVelocityDiff = particle.vy - otherParticle.vy;
-
-        const xDist = otherParticle.x - particle.x;
-        const yDist = otherParticle.y - particle.y;
-
-        // Prevent accidental overlap of particles
-        if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
-
-            // Grab angle between the two colliding particles
-            const angle = -Math.atan2(otherParticle.y - particle.y, otherParticle.x - particle.x);
-
-            // Store mass in var for better readability in collision equation
-            const m1 = particle.mass;
-            const m2 = otherParticle.mass;
-
-            // Velocity before equation
-            const u1 = this.rotate(particle, angle);
-            const u2 = this.rotate(otherParticle, angle);
-
-            // Velocity after 1d collision equation
-            const v1 = { x: u1.x * (m1 - m2) / (m1 + m2) + u2.x * 2 * m2 / (m1 + m2), y: u1.y };
-            const v2 = { x: u2.x * (m1 - m2) / (m1 + m2) + u1.x * 2 * m2 / (m1 + m2), y: u2.y };
-
-            // Final velocity after rotating axis back to original location
-            const vFinal1 = this.rotate(v1, -angle);
-            const vFinal2 = this.rotate(v2, -angle);
-
-            // Swap particle velocities for realistic bounce effect
-            particle.vx = vFinal1.x;
-            particle.vy = vFinal1.y;
-
-            otherParticle.vx = vFinal2.x;
-            otherParticle.vy = vFinal2.y;
-        }
-    }
-
-
 
     detectCollisionWithHole = () => {
         let obj1, obj2;
@@ -291,33 +247,14 @@ class Game extends Component {
         }
     }
 
-    // detectCollisionWithStriker = (strkr) => {
-    //     let obj1;
-
-    //     for (let i = 0; i < gameObjects.length; i++) {
-    //         obj1 = gameObjects[i];
-
-    //         if (this.circleCollide(obj1.x, obj1.y, obj1.radius, strkr.x, strkr.y, strkr.radius)) {
-    //             let vCollision = { x: strkr.x - obj1.x, y: strkr.y - obj1.y };
-    //             let distance = Math.sqrt((strkr.x - obj1.x) * (strkr.x - obj1.x) + (strkr.y - obj1.y) * (strkr.y - obj1.y));
-    //             let vCollisionNorm = { x: vCollision.x / distance, y: vCollision.y / distance };
-    //             let vRelativeVelocity = { x: obj1.vx - strkr.vx, y: obj1.vy - strkr.vy };
-    //             let speed = vRelativeVelocity.x * vCollisionNorm.x + vRelativeVelocity.y * vCollisionNorm.y;
-
-    //             if (speed < 0) { break; }
-
-    //             let impulse = 2 * speed / (obj1.mass + strkr.mass);
-    //             obj1.vx -= (impulse * strkr.mass * vCollisionNorm.x);
-    //             obj1.vy -= (impulse * strkr.mass * vCollisionNorm.y);
-    //             strkr.vx += (impulse * obj1.mass * vCollisionNorm.x);
-    //             strkr.vy += (impulse * obj1.mass * vCollisionNorm.y);
-
-    //         }
-
-    //     }
-    // }
-
     carromLoop = () => {
+        if (strike && (gameObjects[gameObjects.length - 1].vx === 0 && gameObjects[gameObjects.length - 1].vy === 0)) {
+            // console.log("timeout");
+            gameObjects[gameObjects.length - 1].x = 0;
+            gameObjects[gameObjects.length - 1].y = 225;
+            power = 0;
+            strike = false;
+        }
         for (let index = 0; index < gameObjects.length; index++) {
             if (index !== (gameObjects.length - 1)) {
                 gameObjects[index].update();

@@ -19,11 +19,13 @@ class StrikerCoin extends GameObject {
         this.context.fill();
         this.context.stroke();
 
-        for (let index = this.radius; index < 300; index += 50) {
-            this.context.beginPath();
-            this.context.fillStyle = "red";
-            this.context.arc(index, 0, 5, 0, 2 * Math.PI, false);
-            this.context.fill();
+        if (this.y === 225 || this.y === -225) {
+            for (let index = this.radius; index < 200; index += 25) {
+                this.context.beginPath();
+                this.context.fillStyle = "red";
+                this.context.arc(index, 0, 5, 0, 2 * Math.PI, false);
+                this.context.fill();
+            }
         }
         this.context.closePath();
         this.context.restore();
