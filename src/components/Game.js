@@ -1,25 +1,41 @@
 import React, { Component } from "react";
-import CarromCoin from "../models/CarromCoin";
-import BoardImage from "../carrom.png";
-import hit from "../Hit.wav";
-import pock from "../Pocket.wav"
 import "./Game.css";
+
+import CarromCoin from "../models/CarromCoin";
 import StrikerCoin from "../models/StrikerCoin";
 
-let ctx;
-let canvasRef;
-let requestId;
-let gameObjects = [];
-let keys = [];
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
+import Button from 'react-bootstrap/Button';
+import Container from 'react-bootstrap/Container'
+import ProgressBar from 'react-bootstrap/ProgressBar'
 
-let friction = 0.4;
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
+import hit from "../assets/Hit.wav";
+import pock from "../assets/Pocket.wav"
+import BoardImage from "../assets/carrom.png";
+
+let ctx;
 let image;
-let hole = [];
+let canvasRef;
 let strikeSound;
 let pocketSound;
+
+let keys = [];
+let hole = [];
+let gameObjects = [];
+
+let friction = 0.4;
 let strike = false;
-let power = 0;
+
 class Game extends Component {
+    state = {
+        circle: {
+            radius: 16
+        },
+        power: 0
+    }
 
     constructor(props) {
         super(props);
@@ -31,24 +47,24 @@ class Game extends Component {
 
         this.pos = [
             { pX: 0, pY: 0, pCol: "DARKRED" },
-            { pX: 0, pY: (this.props.circle.radius * 2), pCol: "WHEAT" },
-            { pX: 0, pY: (-this.props.circle.radius * 2), pCol: "DARKSLATEGRAY" },
-            { pX: 0, pY: ((this.props.circle.radius * 2) + 32), pCol: "DARKSLATEGRAY" },
-            { pX: 0, pY: (-(this.props.circle.radius * 2) - 32), pCol: "DARKSLATEGRAY" },
-            { pX: 27, pY: this.props.circle.radius, pCol: "DARKSLATEGRAY" },
-            { pX: 27, pY: -this.props.circle.radius, pCol: "WHEAT" },
-            { pX: 27, pY: ((this.props.circle.radius * 2) + 16), pCol: "WHEAT" },
-            { pX: 27, pY: (-(this.props.circle.radius * 2) - 16), pCol: "WHEAT" },
-            { pX: -27, pY: this.props.circle.radius, pCol: "DARKSLATEGRAY" },
-            { pX: -27, pY: -this.props.circle.radius, pCol: "WHEAT" },
-            { pX: -27, pY: ((this.props.circle.radius * 2) + 16), pCol: "WHEAT" },
-            { pX: -27, pY: (-(this.props.circle.radius * 2) - 16), pCol: "WHEAT" },
+            { pX: 0, pY: (this.state.circle.radius * 2), pCol: "WHEAT" },
+            { pX: 0, pY: (-this.state.circle.radius * 2), pCol: "DARKSLATEGRAY" },
+            { pX: 0, pY: ((this.state.circle.radius * 2) + 32), pCol: "DARKSLATEGRAY" },
+            { pX: 0, pY: (-(this.state.circle.radius * 2) - 32), pCol: "DARKSLATEGRAY" },
+            { pX: 27, pY: this.state.circle.radius, pCol: "DARKSLATEGRAY" },
+            { pX: 27, pY: -this.state.circle.radius, pCol: "WHEAT" },
+            { pX: 27, pY: ((this.state.circle.radius * 2) + 16), pCol: "WHEAT" },
+            { pX: 27, pY: (-(this.state.circle.radius * 2) - 16), pCol: "WHEAT" },
+            { pX: -27, pY: this.state.circle.radius, pCol: "DARKSLATEGRAY" },
+            { pX: -27, pY: -this.state.circle.radius, pCol: "WHEAT" },
+            { pX: -27, pY: ((this.state.circle.radius * 2) + 16), pCol: "WHEAT" },
+            { pX: -27, pY: (-(this.state.circle.radius * 2) - 16), pCol: "WHEAT" },
             { pX: 54, pY: 0, pCol: "WHEAT" },
-            { pX: 54, pY: (this.props.circle.radius * 2), pCol: "DARKSLATEGRAY" },
-            { pX: 54, pY: (-this.props.circle.radius * 2), pCol: "DARKSLATEGRAY" },
+            { pX: 54, pY: (this.state.circle.radius * 2), pCol: "DARKSLATEGRAY" },
+            { pX: 54, pY: (-this.state.circle.radius * 2), pCol: "DARKSLATEGRAY" },
             { pX: -54, pY: 0, pCol: "WHEAT" },
-            { pX: -54, pY: (this.props.circle.radius * 2), pCol: "DARKSLATEGRAY" },
-            { pX: -54, pY: (-this.props.circle.radius * 2), pCol: "DARKSLATEGRAY" },
+            { pX: -54, pY: (this.state.circle.radius * 2), pCol: "DARKSLATEGRAY" },
+            { pX: -54, pY: (-this.state.circle.radius * 2), pCol: "DARKSLATEGRAY" },
         ];
     }
 
@@ -94,12 +110,12 @@ class Game extends Component {
 
     initCarromBoard = () => {
         strike = false;
-        power = 0;
+        this.setState({ power: 0 });
         for (let index = 0; index < this.pos.length; index++) {
-            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.props.circle.radius, this.pos[index].pCol, 10);
+            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.state.circle.radius, this.pos[index].pCol, 10);
             gameObjects[index].draw();
         }
-        gameObjects[this.pos.length] = new StrikerCoin(ctx, 0, 225, this.props.circle.radius + 10, "GAINSBORO", 10);
+        gameObjects[this.pos.length] = new StrikerCoin(ctx, 0, 225, this.state.circle.radius + 10, "GAINSBORO", 10);
         gameObjects[this.pos.length].draw();
 
         hole = [
@@ -139,28 +155,28 @@ class Game extends Component {
     }
 
     strikerMovement = () => {
-        if (keys[37] && (gameObjects[gameObjects.length - 1].x - this.props.circle.radius) > -200) {
+        if (keys[37] && (gameObjects[gameObjects.length - 1].x - this.state.circle.radius) > -200) {
             gameObjects[gameObjects.length - 1].x -= 5;
         }
-        else if (keys[39] && (gameObjects[gameObjects.length - 1].x + this.props.circle.radius) < 200) {
+        else if (keys[39] && (gameObjects[gameObjects.length - 1].x + this.state.circle.radius) < 200) {
             gameObjects[gameObjects.length - 1].x += 5;
         }
         else if (keys[38]) {
-            if (power <= 100) {
-                power += 0.5;
+            if (this.state.power < 100) {
+                this.setState({ power: this.state.power + 1 })
             }
         }
         else if (keys[40]) {
-            if (power > 0) {
-                power -= 0.5;
+            if (this.state.power > 0) {
+                this.setState({ power: this.state.power - 1 })
             }
         }
-        // console.log(power);
+        // console.log(this.power);
 
-        if (keys[32] && !strike && power) {
+        if (keys[32] && !strike && this.state.power) {
             strikeSound.play();
-            gameObjects[gameObjects.length - 1].vx = Math.cos(gameObjects[gameObjects.length - 1].angle) * power;
-            gameObjects[gameObjects.length - 1].vy = Math.sin(gameObjects[gameObjects.length - 1].angle) * power;
+            gameObjects[gameObjects.length - 1].vx = Math.cos(gameObjects[gameObjects.length - 1].angle) * this.state.power;
+            gameObjects[gameObjects.length - 1].vy = Math.sin(gameObjects[gameObjects.length - 1].angle) * this.state.power;
             strike = true;
         }
     }
@@ -254,10 +270,9 @@ class Game extends Component {
 
     carromLoop = () => {
         if (strike && (gameObjects[gameObjects.length - 1].vx === 0 && gameObjects[gameObjects.length - 1].vy === 0)) {
-            // console.log("timeout");
             gameObjects[gameObjects.length - 1].x = 0;
             gameObjects[gameObjects.length - 1].y = 225;
-            power = 0;
+            this.setState({ power: 0 });
             strike = false;
         }
         for (let index = 0; index < gameObjects.length; index++) {
@@ -282,14 +297,39 @@ class Game extends Component {
         for (let index = 0; index < gameObjects.length; index++) {
             gameObjects[index].draw();
         }
-        requestId = requestAnimationFrame(this.carromLoop);
+        requestAnimationFrame(this.carromLoop);
     }
 
     render() {
+        let vari = "primary";
+        if (33 < this.state.power && this.state.power < 66) {
+            vari = "warning"
+        }
+        else if (this.state.power > 66) {
+            vari = "danger"
+        }
         return (
-            <div className="game-top">
-                <canvas ref={this.canvas} />
-            </div>
+            <Container fluid="true" >
+                <Row>
+                    <Col lg="2">
+                        <h3 className="text-color-a">Play with Key-Board & Mouse</h3>
+                        <h5 className="text-color-b"><kbd>Space-Bar</kbd> - Shoot </h5>
+                        <h5 className="text-color-b"><kbd>Up-Arrow</kbd> - Power Up </h5>
+                        <h5 className="text-color-b"><kbd>Down-Arrow</kbd> - Power Down </h5>
+                        <h5 className="text-color-b"><kbd>Left-Arrow</kbd> - Move Left </h5>
+                        <h5 className="text-color-b"><kbd>Right-Arrow</kbd> - Move Right </h5>
+                        <h5 className="text-color-b"><kbd>Direction</kbd> - Mouse Move </h5>
+                        <Button variant="danger" size="lg" onClick={this.resetBoard}>Reset Game</Button>
+                    </Col>
+                    <Col lg="2">
+                        <ProgressBar animated striped className="progress" variant={vari} now={this.state.power} />
+                        <h3 className="text-color-power">Power</h3>
+                    </Col>
+                    <Col lg="8">
+                        <canvas ref={this.canvas} />
+                    </Col>
+                </Row>
+            </Container>
         );
     }
 }
