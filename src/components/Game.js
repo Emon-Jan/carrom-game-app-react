@@ -272,11 +272,14 @@ class Game extends Component {
     }
 
     carromLoop = () => {
-        if (this.state.strike && (this.gameObjects[this.gameObjects.length - 1].vx === 0 && this.gameObjects[this.gameObjects.length - 1].vy === 0)) {
-            this.gameObjects[this.gameObjects.length - 1].x = 0;
-            this.gameObjects[this.gameObjects.length - 1].y = 225;
+        let strikerObj = this.gameObjects[this.gameObjects.length - 1];
+        let checkStriker = this.state.strike && (strikerObj.vx === 0 && strikerObj.vy === 0);
+        if (checkStriker) {
+            strikerObj.x = 0;
+            strikerObj.y = 225;
             this.setState({ strike: false, power: 0 });
         }
+
         for (let index = 0; index < this.gameObjects.length; index++) {
             if (index !== (this.gameObjects.length - 1)) {
                 this.gameObjects[index].update();
@@ -286,6 +289,7 @@ class Game extends Component {
             this.applyFriction(this.gameObjects[index]);
             this.setState({ gameObj: this.gameObjects });
         }
+
         this.carromBoundary();
         this.strikerMovement();
         this.detectCollision();
