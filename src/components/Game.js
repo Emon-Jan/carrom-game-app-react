@@ -31,6 +31,7 @@ class Game extends Component {
         strike: false,
         gameObj: [],
         hole: [],
+        pocketCoin: []
     }
 
     constructor(props) {
@@ -41,6 +42,7 @@ class Game extends Component {
             y: undefined
         };
         this.gameObjects = [];
+        this.pocketedCoin = [];
         this.pos = [
             { pX: 0, pY: 0, pCol: "DARKRED" },
             { pX: 0, pY: (this.state.circle.radius * 2), pCol: "WHEAT" },
@@ -103,10 +105,10 @@ class Game extends Component {
     initCarromBoard = () => {
         this.setState({ strike: false, power: 0 });
         for (let index = 0; index < this.pos.length; index++) {
-            this.gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.state.circle.radius, this.pos[index].pCol, 1);
+            this.gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.state.circle.radius, this.pos[index].pCol, 4);
             this.gameObjects[index].draw();
         }
-        this.gameObjects[this.pos.length] = new StrikerCoin(ctx, 0, 225, this.state.circle.radius + 10, "GAINSBORO", 5);
+        this.gameObjects[this.pos.length] = new StrikerCoin(ctx, 0, 225, this.state.circle.radius + 10, "GAINSBORO", 10);
         this.gameObjects[this.pos.length].draw();
 
         let h = [
@@ -133,7 +135,6 @@ class Game extends Component {
                 el.vy = -el.vy
             }
         });
-        this.setState({ gameObj: this.gameObjects });
     }
 
     applyFriction = (obj) => {
@@ -183,11 +184,6 @@ class Game extends Component {
         return squareCircleDistance <= ((r1 + r2) * (r1 + r2));
     }
 
-    circleDistance = (x1, y1, x2, y2) => {
-        let squareCircleDistance = ((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2));
-        return Math.sqrt(squareCircleDistance);
-    }
-
     detectCollision = () => {
         let obj1, obj2;
         for (let index = 0; index < this.gameObjects.length; index++) {
@@ -201,8 +197,7 @@ class Game extends Component {
                 obj2 = this.gameObjects[j];
                 if (obj1 === obj2) continue;
 
-                // if (this.circleCollide(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y, obj2.radius)) {
-                if ((this.circleDistance(obj1.x, obj1.y, obj2.x, obj2.y) - (this.state.circle.radius * 2)) < 0) {
+                if (this.circleCollide(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y, obj2.radius)) {
                     obj1.isColliding = true;
                     obj2.isColliding = true;
                     let vCollision = { x: obj2.x - obj1.x, y: obj2.y - obj1.y };
@@ -240,29 +235,29 @@ class Game extends Component {
 
                     if (xNegyNeg) {
                         if (this.gameObjects[i].radius !== 26) {
-                            this.gameObjects.splice(i, 1);
-                            this.setState({ gameObj: this.gameObjects });
+                            this.pocketedCoin.push(...this.gameObjects.splice(i, 1));
+                            this.setState({ gameObj: this.gameObjects, pocketCoin: this.pocketedCoin });
                             pocketSound.play();
                         }
                     }
                     if (xPoxyNeg) {
                         if (this.gameObjects[i].radius !== 26) {
-                            this.gameObjects.splice(i, 1);
-                            this.setState({ gameObj: this.gameObjects });
+                            this.pocketedCoin.push(...this.gameObjects.splice(i, 1));
+                            this.setState({ gameObj: this.gameObjects, pocketCoin: this.pocketedCoin });
                             pocketSound.play();
                         }
                     }
                     if (xNegyPos) {
                         if (this.gameObjects[i].radius !== 26) {
-                            this.gameObjects.splice(i, 1);
-                            this.setState({ gameObj: this.gameObjects });
+                            this.pocketedCoin.push(...this.gameObjects.splice(i, 1));
+                            this.setState({ gameObj: this.gameObjects, pocketCoin: this.pocketedCoin });
                             pocketSound.play();
                         }
                     }
                     if (xPosyPos) {
                         if (this.gameObjects[i].radius !== 26) {
-                            this.gameObjects.splice(i, 1);
-                            this.setState({ gameObj: this.gameObjects });
+                            this.pocketedCoin.push(...this.gameObjects.splice(i, 1));
+                            this.setState({ gameObj: this.gameObjects, pocketCoin: this.pocketedCoin });
                             pocketSound.play();
                         }
                     }
