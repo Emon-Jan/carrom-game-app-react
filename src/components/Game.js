@@ -1,7 +1,9 @@
 import React, { Component } from "react";
 import CarromCoin from "../models/CarromCoin";
-import BoardImage from "../carrom.png"
-import "./Game.css"
+import BoardImage from "../carrom.png";
+import hit from "../Hit.wav";
+import pock from "../Pocket.wav"
+import "./Game.css";
 import StrikerCoin from "../models/StrikerCoin";
 
 let ctx;
@@ -12,9 +14,11 @@ let striker;
 let keys = [];
 let count = 0;
 
-let friction = 0.5;
+let friction = 0.4;
 let image;
 let hole = [];
+let strikeSound;
+let pocketSound;
 class Game extends Component {
 
     constructor(props) {
@@ -54,7 +58,8 @@ class Game extends Component {
 
     init = () => {
         canvasRef = this.canvas.current;
-
+        strikeSound = new Audio(hit);
+        pocketSound = new Audio(pock);
         canvasRef.addEventListener("mousemove", (event) => {
             var rect = canvasRef.getBoundingClientRect();
             this.mouse.x = event.x - rect.left - 400;
@@ -144,6 +149,7 @@ class Game extends Component {
         if (keys[32]) {
             gameObjects[gameObjects.length - 1].vx += Math.cos(gameObjects[gameObjects.length - 1].angle) * 2;
             gameObjects[gameObjects.length - 1].vy += Math.sin(gameObjects[gameObjects.length - 1].angle) * 2;
+            strikeSound.play();
         }
         else {
             if (gameObjects[gameObjects.length - 1].x !== 0 && gameObjects[gameObjects.length - 1].y !== 225) {
@@ -215,21 +221,25 @@ class Game extends Component {
                     if (xNegyNeg) {
                         if (gameObjects[i].radius !== 26) {
                             gameObjects.splice(i, 1);
+                            pocketSound.play();
                         }
                     }
                     if (xPoxyNeg) {
                         if (gameObjects[i].radius !== 26) {
                             gameObjects.splice(i, 1);
+                            pocketSound.play();
                         }
                     }
                     if (xNegyPos) {
                         if (gameObjects[i].radius !== 26) {
                             gameObjects.splice(i, 1);
+                            pocketSound.play();
                         }
                     }
                     if (xPosyPos) {
                         if (gameObjects[i].radius !== 26) {
                             gameObjects.splice(i, 1);
+                            pocketSound.play();
                         }
                     }
                 }
