@@ -21,18 +21,16 @@ let strikeSound;
 let pocketSound;
 
 let keys = [];
-let hole = [];
-let gameObjects = [];
-
-let friction = 0.4;
-let strike = false;
-
 class Game extends Component {
     state = {
         circle: {
             radius: 16
         },
-        power: 0
+        power: 0,
+        friction: 0.4,
+        strike: false,
+        gameObj: [],
+        hole: [],
     }
 
     constructor(props) {
@@ -42,7 +40,7 @@ class Game extends Component {
             x: undefined,
             y: undefined
         };
-
+        this.gameObjects = [];
         this.pos = [
             { pX: 0, pY: 0, pCol: "DARKRED" },
             { pX: 0, pY: (this.state.circle.radius * 2), pCol: "WHEAT" },
@@ -81,12 +79,10 @@ class Game extends Component {
         });
 
         document.addEventListener("keydown", (event) => {
-            // console.log(event.keyCode, event.timeStamp, event.which);
             keys[event.keyCode] = true;
         });
 
         document.addEventListener("keyup", (event) => {
-            // console.log(event.keyCode, event.timeStamp);
             keys[event.keyCode] = false;
         });
 
@@ -99,38 +95,37 @@ class Game extends Component {
         ctx.translate(400, 400);
         this.initCarromBoard();
 
-        // console.log(gameObjects);
-
         image.onload = () => {
             requestAnimationFrame(this.carromLoop);
         };
     }
 
     initCarromBoard = () => {
-        strike = false;
-        this.setState({ power: 0 });
+        this.setState({ strike: false, power: 0 });
         for (let index = 0; index < this.pos.length; index++) {
-            gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.state.circle.radius, this.pos[index].pCol, 10);
-            gameObjects[index].draw();
+            this.gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.state.circle.radius, this.pos[index].pCol, 1);
+            this.gameObjects[index].draw();
         }
-        gameObjects[this.pos.length] = new StrikerCoin(ctx, 0, 225, this.state.circle.radius + 10, "GAINSBORO", 10);
-        gameObjects[this.pos.length].draw();
+        this.gameObjects[this.pos.length] = new StrikerCoin(ctx, 0, 225, this.state.circle.radius + 10, "GAINSBORO", 5);
+        this.gameObjects[this.pos.length].draw();
 
-        hole = [
+        let h = [
             new CarromCoin(ctx, -325, -325, 25, "WHITE", 1),
             new CarromCoin(ctx, 325, -325, 25, "WHITE", 1),
             new CarromCoin(ctx, -325, 325, 25, "WHITE", 1),
             new CarromCoin(ctx, 325, 325, 25, "WHITE", 1),
         ];
 
-        for (let index = 0; index < hole.length; index++) {
-            hole[index].draw();
+        this.setState({ gameObj: this.gameObjects, hole: h });
+
+        for (let index = 0; index < this.state.hole.length; index++) {
+            this.state.hole[index].draw();
         }
 
     }
 
     carromBoundary = () => {
-        gameObjects.forEach(el => {
+        this.gameObjects.forEach(el => {
             if (el.x + el.vx < -350 + el.radius || el.x + el.vx > 350 - el.radius) {
                 el.vx = -el.vx
             }
@@ -138,13 +133,14 @@ class Game extends Component {
                 el.vy = -el.vy
             }
         });
+        this.setState({ gameObj: this.gameObjects });
     }
 
     applyFriction = (obj) => {
         let speed = Math.sqrt(obj.vx * obj.vx + obj.vy * obj.vy),
             angle = Math.atan2(obj.vy, obj.vx);
-        if (speed > friction) {
-            speed -= friction;
+        if (speed > this.state.friction) {
+            speed -= this.state.friction;
         } else {
             speed = 0;
         }
@@ -153,11 +149,11 @@ class Game extends Component {
     }
 
     strikerMovement = () => {
-        if (keys[37] && (gameObjects[gameObjects.length - 1].x - this.state.circle.radius) > -200) {
-            gameObjects[gameObjects.length - 1].x -= 5;
+        if (keys[37] && (this.gameObjects[this.gameObjects.length - 1].x - this.state.circle.radius) > -200) {
+            this.gameObjects[this.gameObjects.length - 1].x -= 5;
         }
-        else if (keys[39] && (gameObjects[gameObjects.length - 1].x + this.state.circle.radius) < 200) {
-            gameObjects[gameObjects.length - 1].x += 5;
+        else if (keys[39] && (this.gameObjects[this.gameObjects.length - 1].x + this.state.circle.radius) < 200) {
+            this.gameObjects[this.gameObjects.length - 1].x += 5;
         }
         else if (keys[38]) {
             if (this.state.power < 100) {
@@ -169,13 +165,12 @@ class Game extends Component {
                 this.setState({ power: this.state.power - 1 })
             }
         }
-        // console.log(this.power);
 
-        if (keys[32] && !strike && this.state.power) {
+        if (keys[32] && !this.state.strike && this.state.power) {
             strikeSound.play();
-            gameObjects[gameObjects.length - 1].vx = Math.cos(gameObjects[gameObjects.length - 1].angle) * this.state.power;
-            gameObjects[gameObjects.length - 1].vy = Math.sin(gameObjects[gameObjects.length - 1].angle) * this.state.power;
-            strike = true;
+            this.gameObjects[this.gameObjects.length - 1].vx = Math.cos(this.gameObjects[this.gameObjects.length - 1].angle) * this.state.power;
+            this.gameObjects[this.gameObjects.length - 1].vy = Math.sin(this.gameObjects[this.gameObjects.length - 1].angle) * this.state.power;
+            this.setState({ strike: true });
         }
     }
 
@@ -188,20 +183,26 @@ class Game extends Component {
         return squareCircleDistance <= ((r1 + r2) * (r1 + r2));
     }
 
+    circleDistance = (x1, y1, x2, y2) => {
+        let squareCircleDistance = ((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2));
+        return Math.sqrt(squareCircleDistance);
+    }
+
     detectCollision = () => {
         let obj1, obj2;
-        for (let index = 0; index < gameObjects.length; index++) {
-            gameObjects[index].isColliding = false;
+        for (let index = 0; index < this.gameObjects.length; index++) {
+            this.gameObjects[index].isColliding = false;
         }
 
-        for (let i = 0; i < gameObjects.length; i++) {
-            obj1 = gameObjects[i];
+        for (let i = 0; i < this.gameObjects.length; i++) {
+            obj1 = this.gameObjects[i];
 
-            for (let j = 0; j < gameObjects.length; j++) {
-                obj2 = gameObjects[j];
+            for (let j = 0; j < this.gameObjects.length; j++) {
+                obj2 = this.gameObjects[j];
                 if (obj1 === obj2) continue;
 
-                if (this.circleCollide(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y, obj2.radius)) {
+                // if (this.circleCollide(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y, obj2.radius)) {
+                if ((this.circleDistance(obj1.x, obj1.y, obj2.x, obj2.y) - (this.state.circle.radius * 2)) < 0) {
                     obj1.isColliding = true;
                     obj2.isColliding = true;
                     let vCollision = { x: obj2.x - obj1.x, y: obj2.y - obj1.y };
@@ -225,11 +226,11 @@ class Game extends Component {
     detectCollisionWithHole = () => {
         let obj1, obj2;
 
-        for (let i = 0; i < gameObjects.length; i++) {
-            obj1 = gameObjects[i];
+        for (let i = 0; i < this.gameObjects.length; i++) {
+            obj1 = this.gameObjects[i];
 
-            for (let j = 0; j < hole.length; j++) {
-                obj2 = hole[j];
+            for (let j = 0; j < this.state.hole.length; j++) {
+                obj2 = this.state.hole[j];
 
                 if (this.circleCollide(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y, obj2.radius)) {
                     let xNegyNeg = (obj2.x < obj2.radius && obj2.y < obj2.radius) && (obj2.x >= obj1.x || obj2.y >= obj1.y);
@@ -238,26 +239,30 @@ class Game extends Component {
                     let xPosyPos = (obj2.x > obj2.radius && obj2.y > obj2.radius) && (obj2.x <= obj1.x || obj2.y <= obj1.y);
 
                     if (xNegyNeg) {
-                        if (gameObjects[i].radius !== 26) {
-                            gameObjects.splice(i, 1);
+                        if (this.gameObjects[i].radius !== 26) {
+                            this.gameObjects.splice(i, 1);
+                            this.setState({ gameObj: this.gameObjects });
                             pocketSound.play();
                         }
                     }
                     if (xPoxyNeg) {
-                        if (gameObjects[i].radius !== 26) {
-                            gameObjects.splice(i, 1);
+                        if (this.gameObjects[i].radius !== 26) {
+                            this.gameObjects.splice(i, 1);
+                            this.setState({ gameObj: this.gameObjects });
                             pocketSound.play();
                         }
                     }
                     if (xNegyPos) {
-                        if (gameObjects[i].radius !== 26) {
-                            gameObjects.splice(i, 1);
+                        if (this.gameObjects[i].radius !== 26) {
+                            this.gameObjects.splice(i, 1);
+                            this.setState({ gameObj: this.gameObjects });
                             pocketSound.play();
                         }
                     }
                     if (xPosyPos) {
-                        if (gameObjects[i].radius !== 26) {
-                            gameObjects.splice(i, 1);
+                        if (this.gameObjects[i].radius !== 26) {
+                            this.gameObjects.splice(i, 1);
+                            this.setState({ gameObj: this.gameObjects });
                             pocketSound.play();
                         }
                     }
@@ -267,33 +272,33 @@ class Game extends Component {
     }
 
     carromLoop = () => {
-        if (strike && (gameObjects[gameObjects.length - 1].vx === 0 && gameObjects[gameObjects.length - 1].vy === 0)) {
-            gameObjects[gameObjects.length - 1].x = 0;
-            gameObjects[gameObjects.length - 1].y = 225;
-            this.setState({ power: 0 });
-            strike = false;
+        if (this.state.strike && (this.gameObjects[this.gameObjects.length - 1].vx === 0 && this.gameObjects[this.gameObjects.length - 1].vy === 0)) {
+            this.gameObjects[this.gameObjects.length - 1].x = 0;
+            this.gameObjects[this.gameObjects.length - 1].y = 225;
+            this.setState({ strike: false, power: 0 });
         }
-        for (let index = 0; index < gameObjects.length; index++) {
-            if (index !== (gameObjects.length - 1)) {
-                gameObjects[index].update();
+        for (let index = 0; index < this.gameObjects.length; index++) {
+            if (index !== (this.gameObjects.length - 1)) {
+                this.gameObjects[index].update();
             } else {
-                gameObjects[index].update(this.mouse.x, this.mouse.y);
+                this.gameObjects[index].update(this.mouse.x, this.mouse.y);
             }
-            this.applyFriction(gameObjects[index]);
+            this.applyFriction(this.gameObjects[index]);
+            this.setState({ gameObj: this.gameObjects });
         }
         this.carromBoundary();
+        this.strikerMovement();
         this.detectCollision();
         this.detectCollisionWithHole();
-        this.strikerMovement();
         ctx.clearRect(-400, -400, canvasRef.width, canvasRef.height);
 
         ctx.drawImage(image, -400, -400, 800, 800);
 
-        for (let index = 0; index < hole.length; index++) {
-            hole[index].draw();
+        for (let index = 0; index < this.state.hole.length; index++) {
+            this.state.hole[index].draw();
         }
-        for (let index = 0; index < gameObjects.length; index++) {
-            gameObjects[index].draw();
+        for (let index = 0; index < this.gameObjects.length; index++) {
+            this.state.gameObj[index].draw();
         }
         requestAnimationFrame(this.carromLoop);
     }
