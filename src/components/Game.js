@@ -157,15 +157,11 @@ class Game extends Component {
         }
         // console.log(power);
 
-        if (keys[32] && !strike) {
+        if (keys[32] && !strike && power) {
             strikeSound.play();
             gameObjects[gameObjects.length - 1].vx = Math.cos(gameObjects[gameObjects.length - 1].angle) * power;
             gameObjects[gameObjects.length - 1].vy = Math.sin(gameObjects[gameObjects.length - 1].angle) * power;
             strike = true;
-        }
-        else {
-            if (gameObjects[gameObjects.length - 1].x !== 0 && gameObjects[gameObjects.length - 1].y !== 225) {
-            }
         }
     }
 
