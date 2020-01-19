@@ -10,8 +10,6 @@ import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container'
 import ProgressBar from 'react-bootstrap/ProgressBar'
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-
 import hit from "../assets/Hit.wav";
 import pock from "../assets/Pocket.wav"
 import BoardImage from "../assets/carrom.png";
