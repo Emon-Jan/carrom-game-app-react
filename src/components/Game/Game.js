@@ -337,6 +337,7 @@ class Game extends Component {
         else if (this.state.power > 66) {
             vari = "danger"
         }
+
         return (
             <Container fluid="true" >
                 <Row>
