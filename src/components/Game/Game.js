@@ -258,11 +258,13 @@ class Game extends Component {
 
 
     checkTurn = () => {
-        if (this.pocketedCoin.length === this.state.pocketCoin.length) {
-            this.setState({ turn: !this.state.turn });
-        }
-        else {
-            this.setState({ gameObj: this.gameObjects, pocketCoin: this.pocketedCoin });
+        if (this.state.strike) {
+            if (this.pocketedCoin.length === this.state.pocketCoin.length) {
+                this.setState({ turn: !this.state.turn });
+            }
+            else {
+                this.setState({ gameObj: this.gameObjects, pocketCoin: this.pocketedCoin });
+            }
         }
     }
 
@@ -309,7 +311,6 @@ class Game extends Component {
         this.carromBoundary();
         this.strikerMovement();
         this.detectCollision();
-        // this.detectCollisionWithHole();
         ctx.clearRect(-400, -400, canvasRef.width, canvasRef.height);
 
         ctx.drawImage(image, -400, -400, 800, 800);
@@ -324,6 +325,11 @@ class Game extends Component {
     }
 
     render() {
+        if (this.state.pocketCoin.length === 19) {
+            setTimeout(() => {
+                this.initCarromBoard();
+            }, 3000);
+        }
         let vari = "primary";
         if (33 < this.state.power && this.state.power < 66) {
             vari = "warning"
@@ -331,7 +337,6 @@ class Game extends Component {
         else if (this.state.power > 66) {
             vari = "danger"
         }
-
         return (
             <Container fluid="true" >
                 <Row>
