@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import "./Game.css";
+import User from "../User/User";
 
-import CarromCoin from "../models/CarromCoin";
-import StrikerCoin from "../models/StrikerCoin";
+import CarromCoin from "../../models/CarromCoin";
+import StrikerCoin from "../../models/StrikerCoin";
 
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -10,16 +11,16 @@ import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container'
 import ProgressBar from 'react-bootstrap/ProgressBar'
 
-import hit from "../assets/Hit.wav";
-import pock from "../assets/Pocket.wav"
-import BoardImage from "../assets/carrom.png";
+import hit from "../../assets/Hit.wav";
+import pock from "../../assets/Pocket.wav"
+import BoardImage from "../../assets/carrom.png";
+import UserObject from "../../models/UserObject";
 
 let ctx;
 let image;
 let canvasRef;
 let strikeSound;
 let pocketSound;
-
 let keys = [];
 class Game extends Component {
     state = {
@@ -29,9 +30,13 @@ class Game extends Component {
         power: 0,
         friction: 0.4,
         strike: false,
+        turn: true,
         gameObj: [],
         hole: [],
-        pocketCoin: []
+        user: [new UserObject("User-1", 20, "WHEAT", true),
+        new UserObject("User-2", 19, "DARKSLATEGRAY", false)],
+        pocketCoin: [],
+        show: false
     }
 
     constructor(props) {
@@ -97,13 +102,14 @@ class Game extends Component {
         ctx.translate(400, 400);
         this.initCarromBoard();
 
+        this.setState({ show: true });
         image.onload = () => {
             requestAnimationFrame(this.carromLoop);
         };
     }
 
     initCarromBoard = () => {
-        this.setState({ strike: false, power: 0 });
+        this.setState({ strike: false, power: 0, pocketCoin: [], turn: true });
         for (let index = 0; index < this.pos.length; index++) {
             this.gameObjects[index] = new CarromCoin(ctx, this.pos[index].pX, this.pos[index].pY, this.state.circle.radius, this.pos[index].pCol, 4);
             this.gameObjects[index].draw();
@@ -175,10 +181,6 @@ class Game extends Component {
         }
     }
 
-    resetBoard = () => {
-        this.initCarromBoard();
-    }
-
     circleCollide = (x1, y1, r1, x2, y2, r2) => {
         let squareCircleDistance = ((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2));
         return squareCircleDistance <= ((r1 + r2) * (r1 + r2));
@@ -215,14 +217,6 @@ class Game extends Component {
                     obj2.vy += (impulse * obj1.mass * vCollisionNorm.y);
                 }
             }
-        }
-    }
-
-    detectCollisionWithHole = () => {
-        let obj1, obj2;
-
-        for (let i = 0; i < this.gameObjects.length; i++) {
-            obj1 = this.gameObjects[i];
 
             for (let j = 0; j < this.state.hole.length; j++) {
                 obj2 = this.state.hole[j];
@@ -236,28 +230,24 @@ class Game extends Component {
                     if (xNegyNeg) {
                         if (this.gameObjects[i].radius !== 26) {
                             this.pocketedCoin.push(...this.gameObjects.splice(i, 1));
-                            this.setState({ gameObj: this.gameObjects, pocketCoin: this.pocketedCoin });
                             pocketSound.play();
                         }
                     }
                     if (xPoxyNeg) {
                         if (this.gameObjects[i].radius !== 26) {
                             this.pocketedCoin.push(...this.gameObjects.splice(i, 1));
-                            this.setState({ gameObj: this.gameObjects, pocketCoin: this.pocketedCoin });
                             pocketSound.play();
                         }
                     }
                     if (xNegyPos) {
                         if (this.gameObjects[i].radius !== 26) {
                             this.pocketedCoin.push(...this.gameObjects.splice(i, 1));
-                            this.setState({ gameObj: this.gameObjects, pocketCoin: this.pocketedCoin });
                             pocketSound.play();
                         }
                     }
                     if (xPosyPos) {
                         if (this.gameObjects[i].radius !== 26) {
                             this.pocketedCoin.push(...this.gameObjects.splice(i, 1));
-                            this.setState({ gameObj: this.gameObjects, pocketCoin: this.pocketedCoin });
                             pocketSound.play();
                         }
                     }
@@ -266,12 +256,43 @@ class Game extends Component {
         }
     }
 
+
+    checkTurn = () => {
+        if (this.pocketedCoin.length === this.state.pocketCoin.length) {
+            this.setState({ turn: !this.state.turn });
+        }
+        else {
+            this.setState({ gameObj: this.gameObjects, pocketCoin: this.pocketedCoin });
+        }
+    }
+
+    resetBoard = () => {
+        this.initCarromBoard();
+    }
+
     carromLoop = () => {
         let strikerObj = this.gameObjects[this.gameObjects.length - 1];
-        let checkStriker = this.state.strike && (strikerObj.vx === 0 && strikerObj.vy === 0);
+        let checkStriker = this.state.strike;
+        for (let index = 0; index < this.gameObjects.length; index++) {
+            checkStriker = checkStriker && (this.state.gameObj[index].vx === 0 && this.state.gameObj[index].vy === 0);
+        }
+        this.checkTurn();
+        let usr = this.state.user;
         if (checkStriker) {
-            strikerObj.x = 0;
-            strikerObj.y = 225;
+            if (this.state.turn) {
+                strikerObj.x = 0;
+                strikerObj.y = 225;
+                usr[0].isTurn = true;
+                usr[1].isTurn = false;
+                this.setState({ user: usr });
+            }
+            else {
+                strikerObj.x = 0;
+                strikerObj.y = -225;
+                usr[0].isTurn = false;
+                usr[1].isTurn = true;
+                this.setState({ user: usr });
+            }
             this.setState({ strike: false, power: 0 });
         }
 
@@ -288,7 +309,7 @@ class Game extends Component {
         this.carromBoundary();
         this.strikerMovement();
         this.detectCollision();
-        this.detectCollisionWithHole();
+        // this.detectCollisionWithHole();
         ctx.clearRect(-400, -400, canvasRef.width, canvasRef.height);
 
         ctx.drawImage(image, -400, -400, 800, 800);
@@ -310,24 +331,29 @@ class Game extends Component {
         else if (this.state.power > 66) {
             vari = "danger"
         }
+
         return (
             <Container fluid="true" >
                 <Row>
                     <Col lg="2">
-                        <h3 className="text-color-a">Play with Key-Board & Mouse</h3>
-                        <h5 className="text-color-b"><kbd>Space-Bar</kbd> - Shoot </h5>
-                        <h5 className="text-color-b"><kbd>Up-Arrow</kbd> - Power Up </h5>
-                        <h5 className="text-color-b"><kbd>Down-Arrow</kbd> - Power Down </h5>
-                        <h5 className="text-color-b"><kbd>Left-Arrow</kbd> - Move Left </h5>
-                        <h5 className="text-color-b"><kbd>Right-Arrow</kbd> - Move Right </h5>
-                        <h5 className="text-color-b"><kbd>Direction</kbd> - Mouse Move </h5>
-                        <Button variant="danger" size="lg" onClick={this.resetBoard}>Reset Game</Button>
+                        <h4 className="text-color-a">Play with Key-Board & Mouse</h4>
+                        <p className="text-color-b"><kbd>Up-Arrow</kbd> - Power Up </p>
+                        <p className="text-color-b"><kbd>Down-Arrow</kbd> - Power Down </p>
+                        <p className="text-color-b"><kbd>Left-Arrow</kbd> - Move Left </p>
+                        <p className="text-color-b"><kbd>Right-Arrow</kbd> - Move Right </p>
+                        <p className="text-color-b"><kbd>Space-Bar</kbd> - Shoot </p>
+                        <p className="text-color-b"><kbd>Direction</kbd> - Mouse Move </p>
                     </Col>
-                    <Col lg="2">
+                    <Col lg="3">
+                        <div className="border-user">
+                            <User name={this.state.user[0].name} score={this.state.user[0].score} turn={this.state.user[0].isTurn} />
+                            <User name={this.state.user[1].name} score={this.state.user[1].score} turn={this.state.user[1].isTurn} />
+                        </div>
                         <ProgressBar animated striped className="progress" variant={vari} now={this.state.power} />
                         <h3 className="text-color-power">Power</h3>
+                        <Button variant="danger" block="true" size="lg" onClick={this.resetBoard}>Reset Game</Button>
                     </Col>
-                    <Col lg="8">
+                    <Col lg="7">
                         <canvas ref={this.canvas} />
                     </Col>
                 </Row>

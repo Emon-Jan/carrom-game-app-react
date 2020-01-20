@@ -11,7 +11,7 @@ canvas{
 
 .progress{
   /* transform: rotate(-90deg); */
-  margin-top: 310px;
+  margin-top: 10px;
   width: 100%;
   height: 30px;
 } 
@@ -41,4 +41,11 @@ kbd {
   line-height: 1;
   padding: 2px 4px;
   white-space: nowrap;
+}
+
+.border-user{
+  border: 5px solid coral;
+  border-style: inset;
+  border-radius: 5px;
+  margin-bottom: 5px;
 }
